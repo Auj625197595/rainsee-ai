@@ -168,6 +168,15 @@
           <h4>备份</h4>
           <div class="backup-actions">
             <div class="backup-section">
+              <h5>备份提醒</h5>
+              <p>设置多少天未备份后提醒您。</p>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>提醒间隔 (天)</label>
+                <input type="number" min="1" :value="store.settings.backupReminderDays" @change="updateBackupReminderDays($event.target.value)" style="width: 100px;">
+              </div>
+            </div>
+
+            <div class="backup-section">
               <h5>数据导出</h5>
               <p>将当前的所有聊天记录、设置、以及记忆系统数据导出为 JSON 文件。</p>
               <button class="btn-primary" @click="exportData">导出完整备份</button>
@@ -393,6 +402,12 @@ export default {
     confirmDeleteModel(id) {
       if (confirm('确定要删除这个模型配置吗？')) {
         mutations.deleteModel(id);
+      }
+    },
+    updateBackupReminderDays(value) {
+      const days = parseInt(value, 10);
+      if (days > 0) {
+        mutations.setBackupReminderDays(days);
       }
     },
     // Backup & Restore Methods

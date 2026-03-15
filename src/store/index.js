@@ -2,6 +2,7 @@ import Vue from 'vue';
 import { memoryDB } from '@/utils/db';
 import { encryptData, decryptData } from '@/utils/crypto';
 import { CHARACTER_STORE_URL } from '@/api/config';
+import { generateDefaultModels, generateActiveModelIds } from './modelConfig';
 
 const STORAGE_KEY = 'rainshome_ai_store';
 
@@ -35,7 +36,7 @@ const defaultRoles = [
 ];
 
 // Default state definition
-const defaultModels =  [];
+const defaultModels = generateDefaultModels();
 
 const defaultState = {
   token: '',
@@ -59,10 +60,9 @@ const defaultState = {
     webSearchEnabled: false, // Toggle for "Web Search" mode
     planEnabled: false, // Toggle for "Plan" mode
     imageGenEnabled: false, // Toggle for "Image Generation" mode
-    activeModelId:  '', // Legacy / Current fallback
-    activeTextModelId:  '',
-    activeT2iModelId:  '',
-    activeI2iModelId:  '',
+    backupReminderDays: 1, // Default reminder interval in days
+    lastBackupTime: null, // Timestamp of last backup
+    ...generateActiveModelIds(),
     models: defaultModels
   },
   inputContext: '', // Content added via window.addDoc
@@ -90,6 +90,13 @@ const loadState = () => {
 
     // Migration: Migrate old settings structure to new models array
     if (parsed.settings) {
+      if (parsed.settings.backupReminderDays === undefined) {
+        parsed.settings.backupReminderDays = 1;
+      }
+      if (parsed.settings.lastBackupTime === undefined) {
+        parsed.settings.lastBackupTime = null;
+      }
+
       if (!parsed.settings.models) {
         const oldSettings = parsed.settings;
         parsed.settings = {
@@ -250,6 +257,14 @@ export const mutations = {
   },
   setPlanEnabled(enabled) {
     store.settings.planEnabled = enabled;
+    saveState();
+  },
+  setBackupReminderDays(days) {
+    store.settings.backupReminderDays = days;
+    saveState();
+  },
+  updateLastBackupTime() {
+    store.settings.lastBackupTime = Date.now();
     saveState();
   },
   setSettings(newSettings) {
@@ -579,6 +594,7 @@ export const mutations = {
 
   // Backup & Restore
   async getFullBackup() {
+    this.updateLastBackupTime();
     const indexedData = await memoryDB.getAll();
     const storeData = { ...store };
     return {
