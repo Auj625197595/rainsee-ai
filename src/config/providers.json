@@ -1,0 +1,57 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "configs": {
+      "text": { "endpoint": "https://api.openai.com/v1/chat/completions", "model": "gpt-5.4-pro" },
+      "t2i": { "endpoint": "https://api.openai.com/v1/images/generations", "model": "gpt-image-1" },
+      "i2i": { "endpoint": "https://api.openai.com/v1/images/edits", "model": "gpt-image-1" }
+    }
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek",
+    "configs": {
+      "text": { "endpoint": "https://api.deepseek.com/chat/completions", "model": "deepseek-chat" }
+    }
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "configs": {
+      "text": { "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:streamGenerateContent", "model": "gemini-3-pro-preview" },
+      "t2i": { "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent", "model": "gemini-3.1-flash-image-preview" }
+    }
+  },
+  {
+    "id": "bigmodel",
+    "name": "BigModel",
+    "configs": {
+      "text": { "endpoint": "https://open.bigmodel.cn/api/paas/v4/chat/completions", "model": "glm-4.7-flash" },
+      "t2i": { "endpoint": "https://open.bigmodel.cn/api/paas/v4/images/generations", "model": "cogview-3-plus" }
+    }
+  },
+  {
+    "id": "siliconflow",
+    "name": "SiliconFlow",
+    "configs": {
+      "text": { "endpoint": "https://api.siliconflow.cn/v1/chat/completions", "model": "deepseek-ai/DeepSeek-V3" },
+      "t2i": { "endpoint": "https://api.siliconflow.cn/v1/images/generations", "model": "Qwen/Qwen-Image" },
+      "i2i": { "endpoint": "https://api.siliconflow.cn/v1/images/generations", "model": "Qwen/Qwen-Image-Edit-2509" }
+    }
+  },
+  {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "configs": {
+      "text": { "endpoint": "https://api.anthropic.com/v1/messages", "model": "claude-3-5-sonnet-20241022" }
+    }
+  },
+  {
+    "id": "kimi",
+    "name": "Kimi",
+    "configs": {
+      "text": { "endpoint": "https://api.moonshot.cn/v1/chat/completions", "model": "moonshot-v1-8k" }
+    }
+  }
+]
