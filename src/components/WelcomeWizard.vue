@@ -112,9 +112,22 @@
 
         <div class="config-form">
           <div class="form-group">
-            <label>供应商 (Provider)</label>
+            <div class="provider-label-row">
+              <label>供应商 (Provider)</label>
+              <a v-if="currentProvider && currentProvider.course"
+                 :href="currentProvider.course"
+                 target="_blank"
+                 class="tutorial-link"
+                 title="查看配置教程">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>查看教程</span>
+              </a>
+            </div>
             <select v-model="modelForm.provider" @change="handleProviderChange">
-              <option value="">自定义 / 通用转发</option>
               <option v-for="p in providers" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
           </div>
@@ -182,6 +195,9 @@ export default {
           this.modelForm.endpoint &&
           this.modelForm.apiKey &&
           this.modelForm.model;
+    },
+    currentProvider() {
+      return this.providers.find(p => p.id === this.modelForm.provider);
     }
   },
   methods: {
@@ -190,10 +206,9 @@ export default {
     },
     handleProviderChange() {
       const provider = this.providers.find(p => p.id === this.modelForm.provider);
-      if (provider) {
-        this.modelForm.endpoint = provider.endpoint;
-        this.modelForm.model = provider.defaultModel || '';
-        // If provider has a specific name pattern, we could use it, but keep it simple
+      if (provider && provider.configs && provider.configs.text) {
+        this.modelForm.endpoint = provider.configs.text.endpoint;
+        this.modelForm.model = provider.configs.text.model || '';
       }
     },
     saveAndStart() {
@@ -621,6 +636,36 @@ export default {
   font-weight: 500;
   color: var(--text-primary);
   font-size: 14px;
+}
+
+.provider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.provider-label-row label {
+  margin-bottom: 0;
+}
+
+.tutorial-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: rgba(124, 58, 237, 0.1);
+  transition: all 0.2s;
+}
+
+.tutorial-link:hover {
+  background-color: var(--accent-color);
+  color: white;
 }
 
 .form-group input,

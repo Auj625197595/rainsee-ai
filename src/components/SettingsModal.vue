@@ -15,13 +15,16 @@
           <li :class="{ active: activeSettingTab === 'backup' }" @click="activeSettingTab = 'backup'">
             <span>备份</span>
           </li>
+          <li :class="{ active: activeSettingTab === 'about' }" @click="activeSettingTab = 'about'">
+            <span>关于</span>
+          </li>
         </ul>
       </div>
       <div class="modal-content">
         <div class="modal-close-btn" @click="close">
           <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </div>
-        
+
         <div v-if="activeSettingTab === 'general'" class="settings-panel">
           <h4>常规设置</h4>
           <div class="form-group">
@@ -38,16 +41,16 @@
             <h4>模型配置</h4>
             <button v-if="!editingModelId" class="btn-text" @click="startAddModel">+ 添加模型</button>
           </div>
-          
+
           <!-- Model List -->
           <div v-if="!editingModelId" class="model-list-container">
             <!-- Text Generation Models -->
             <div class="model-type-section">
               <h5>文字合成模型 (Text Generation)</h5>
               <div class="model-list">
-                <div v-for="model in store.settings.models.filter(m => m.type === 'text' || !m.type)" 
-                     :key="model.id" class="model-item" 
-                     :class="{ active: store.settings.activeTextModelId === model.id }" 
+                <div v-for="model in store.settings.models.filter(m => m.type === 'text' || !m.type)"
+                     :key="model.id" class="model-item"
+                     :class="{ active: store.settings.activeTextModelId === model.id }"
                      @click="selectModelByType(model.id, 'text')">
                   <div class="model-info">
                     <div class="model-name">{{ model.name }}</div>
@@ -69,9 +72,9 @@
             <div class="model-type-section">
               <h5>文生图模型 (Text-to-Image)</h5>
               <div class="model-list">
-                <div v-for="model in store.settings.models.filter(m => m.type === 't2i')" 
-                     :key="model.id" class="model-item" 
-                     :class="{ active: store.settings.activeT2iModelId === model.id }" 
+                <div v-for="model in store.settings.models.filter(m => m.type === 't2i')"
+                     :key="model.id" class="model-item"
+                     :class="{ active: store.settings.activeT2iModelId === model.id }"
                      @click="selectModelByType(model.id, 't2i')">
                   <div class="model-info">
                     <div class="model-name">{{ model.name }}</div>
@@ -96,9 +99,9 @@
             <div class="model-type-section">
               <h5>图生图模型 (Image-to-Image)</h5>
               <div class="model-list">
-                <div v-for="model in store.settings.models.filter(m => m.type === 'i2i')" 
-                     :key="model.id" class="model-item" 
-                     :class="{ active: store.settings.activeI2iModelId === model.id }" 
+                <div v-for="model in store.settings.models.filter(m => m.type === 'i2i')"
+                     :key="model.id" class="model-item"
+                     :class="{ active: store.settings.activeI2iModelId === model.id }"
                      @click="selectModelByType(model.id, 'i2i')">
                   <div class="model-info">
                     <div class="model-name">{{ model.name }}</div>
@@ -123,10 +126,12 @@
           <!-- Model Editor Form -->
           <div v-else class="model-editor">
             <div class="form-group">
-              <label>供应商 (Provider)</label>
+              <label>
+                供应商 (Provider)
+                <a v-if="selectedProviderCourse" :href="selectedProviderCourse" target="_blank" style="margin-left: 8px; font-size: 12px; text-decoration: underline;">获取教程</a>
+              </label>
               <select v-model="modelEditForm.provider" @change="handleProviderChange">
-                <option value="">通用转发</option>
-                <option v-for="p in providers" :key="p.id" :value="p.id">{{ p.name }}</option>
+                <option v-for="(p, index) in providers" :key="index" :value="p.name">{{ p.name }}</option>
               </select>
             </div>
             <div class="form-group">
@@ -167,7 +172,7 @@
               <p>将当前的所有聊天记录、设置、以及记忆系统数据导出为 JSON 文件。</p>
               <button class="btn-primary" @click="exportData">导出完整备份</button>
             </div>
-            
+
             <div class="backup-section">
               <h5>数据导入</h5>
               <p>从 JSON 备份文件中恢复聊天记录和设置。这将会覆盖当前的本地数据。</p>
@@ -179,6 +184,27 @@
               <h5>危险区域</h5>
               <p>清除所有本地存储的数据，包括聊天记录、设置、IndexedDB 中的记忆。此操作不可撤销。</p>
               <button class="btn-danger" @click="resetAllData">清除所有本地数据</button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="activeSettingTab === 'about'" class="settings-panel">
+          <h4>关于 RainSee AI</h4>
+          <div class="about-section">
+            <p class="about-desc">RainSee AI 是一个开源的、纯净的、安全且私有化的 AI 客户端。我们致力于提供最优质的 AI 交互体验，同时保障您的数据完全由您自己掌控。</p>
+
+            <div class="link-card">
+              <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                </svg>
+                <span>GitHub 开源仓库</span>
+              </a>
+            </div>
+
+            <div class="version-info">
+              <p>如果觉得好用，请在 GitHub 上点个 Star ⭐ 支持一下！</p>
+              <small class="version-text">Version 1.0.0</small>
             </div>
           </div>
         </div>
@@ -243,9 +269,15 @@ export default {
     },
     filteredModelTypes() {
       if (!this.modelEditForm.provider) return this.modelTypes;
-      const provider = this.providers.find(p => p.id === this.modelEditForm.provider);
+      const provider = this.providers.find(p => p.name === this.modelEditForm.provider || p.id === this.modelEditForm.provider);
       if (!provider) return this.modelTypes;
       return this.modelTypes.filter(t => !!provider.configs[t.id]);
+    },
+    selectedProviderCourse() {
+      console.log("providers", this.providers);
+      if (!this.modelEditForm.provider) return null;
+      const provider = this.providers.find(p => p.name === this.modelEditForm.provider || p.id === this.modelEditForm.provider);
+      return provider ? provider.course : null;
     }
   },
   watch: {
@@ -302,21 +334,21 @@ export default {
     },
     handleProviderChange() {
       if (!this.modelEditForm.provider) return;
-      
-      const provider = this.providers.find(p => p.id === this.modelEditForm.provider);
+
+      const provider = this.providers.find(p => p.name === this.modelEditForm.provider || p.id === this.modelEditForm.provider);
       if (provider) {
         // Auto-fill name if empty
         this.modelEditForm.name = this.modelEditForm.name || provider.name;
-        
+
         // Check if current type is supported by the provider, if not default to 'text'
         if (this.modelEditForm.type && !provider.configs[this.modelEditForm.type]) {
           this.modelEditForm.type = 'text';
         }
-        
+
         // Use current type or default to 'text'
         const type = this.modelEditForm.type || 'text';
         const config = provider.configs[type] || provider.configs['text'];
-        
+
         if (config) {
           this.modelEditForm.endpoint = config.endpoint;
           this.modelEditForm.model = config.model;
@@ -326,7 +358,7 @@ export default {
     handleTypeChange() {
       // If a provider is selected, update endpoint and model based on the new type
       if (this.modelEditForm.provider) {
-        const provider = this.providers.find(p => p.id === this.modelEditForm.provider);
+        const provider = this.providers.find(p => p.name === this.modelEditForm.provider || p.id === this.modelEditForm.provider);
         if (provider) {
           const config = provider.configs[this.modelEditForm.type];
           if (config) {
@@ -802,5 +834,77 @@ export default {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* About Section */
+.about-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.about-desc {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.link-card {
+  display: flex;
+  justify-content: center;
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.5rem;
+  background-color: #24292e;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.github-link:hover {
+  background-color: #1b1f23;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] .github-link {
+  background-color: #f0f6fc;
+  color: #24292e;
+}
+
+[data-theme="dark"] .github-link:hover {
+  background-color: #fff;
+}
+
+.version-info {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .version-info {
+  border-top-color: rgba(255,255,255,0.05);
+}
+
+.version-info p {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.version-text {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  font-family: monospace;
 }
 </style>

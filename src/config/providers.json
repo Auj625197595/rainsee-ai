@@ -1,5 +1,15 @@
 [
   {
+    "id": "openai-replay",
+    "name": "通用ai接口-中转站",
+    "configs": {
+      "text": { "endpoint": "https://host/v1/chat/completions", "model": "gemini-3-pro-preview" },
+      "t2i": { "endpoint": "https://host/v1/images/generations", "model": "gpt-image-1" },
+      "i2i": { "endpoint": "https://host/v1/images/edits", "model": "gpt-image-1" }
+    },
+    "course":"https://club.yujianpay.com/index.php/archives/2147/"
+  },
+  {
     "id": "openai",
     "name": "OpenAI",
     "configs": {
@@ -29,7 +39,8 @@
     "configs": {
       "text": { "endpoint": "https://open.bigmodel.cn/api/paas/v4/chat/completions", "model": "glm-4.7-flash" },
       "t2i": { "endpoint": "https://open.bigmodel.cn/api/paas/v4/images/generations", "model": "cogview-3-plus" }
-    }
+    },
+    "course":"https://club.yujianpay.com/index.php/archives/2143/"
   },
   {
     "id": "siliconflow",
@@ -38,7 +49,8 @@
       "text": { "endpoint": "https://api.siliconflow.cn/v1/chat/completions", "model": "deepseek-ai/DeepSeek-V3" },
       "t2i": { "endpoint": "https://api.siliconflow.cn/v1/images/generations", "model": "Qwen/Qwen-Image" },
       "i2i": { "endpoint": "https://api.siliconflow.cn/v1/images/generations", "model": "Qwen/Qwen-Image-Edit-2509" }
-    }
+    },
+    "course":"https://club.yujianpay.com/index.php/archives/2135/"
   },
   {
     "id": "anthropic",
