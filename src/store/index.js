@@ -35,7 +35,7 @@ const defaultRoles = [
 ];
 
 // Default state definition
-const defaultModels = [];
+const defaultModels =  [];
 
 const defaultState = {
   token: '',
@@ -60,7 +60,7 @@ const defaultState = {
     planEnabled: false, // Toggle for "Plan" mode
     imageGenEnabled: false, // Toggle for "Image Generation" mode
     activeModelId:  '', // Legacy / Current fallback
-    activeTextModelId: '',
+    activeTextModelId:  '',
     activeT2iModelId:  '',
     activeI2iModelId:  '',
     models: defaultModels
@@ -81,6 +81,11 @@ const loadState = () => {
     // Decrypt roleSettings if it's a string
     if (parsed.roleSettings && typeof parsed.roleSettings === 'string') {
       parsed.roleSettings = decryptData(parsed.roleSettings) || defaultState.roleSettings;
+    }
+
+    // Ignore sessions from localStorage as we use IndexedDB now
+    if (parsed.sessions) {
+      delete parsed.sessions;
     }
 
     // Migration: Migrate old settings structure to new models array
@@ -174,6 +179,8 @@ const saveState = () => {
 
     // Do not persist volatile states
     delete stateToSave.settings.imageGenEnabled;
+    // Do not persist sessions to localStorage (moved to IndexedDB)
+    delete stateToSave.sessions;
 
     // Encrypt roleSettings
     if (stateToSave.roleSettings) {
@@ -434,20 +441,20 @@ export const mutations = {
   async finalizeLastMessage() {
     console.log('[DEBUG-STORE] finalizeLastMessage started');
     try {
-        saveState();
-        console.log('[DEBUG-STORE] State saved to localStorage');
-        // Auto-save session to IndexedDB after each AI response
-        await this.saveCurrentSessionToDB();
-        console.log('[DEBUG-STORE] Session saved to IndexedDB');
+      saveState();
+      console.log('[DEBUG-STORE] State saved to localStorage');
+      // Auto-save session to IndexedDB after each AI response
+      await this.saveCurrentSessionToDB();
+      console.log('[DEBUG-STORE] Session saved to IndexedDB');
     } catch (e) {
-        console.error('[DEBUG-STORE] Error in finalizeLastMessage:', e);
+      console.error('[DEBUG-STORE] Error in finalizeLastMessage:', e);
     }
   },
   async saveCurrentSessionToDB() {
     console.log('[DEBUG-STORE] saveCurrentSessionToDB called');
     if (store.history.length === 0) {
-        console.log('[DEBUG-STORE] History empty, skipping save');
-        return;
+      console.log('[DEBUG-STORE] History empty, skipping save');
+      return;
     }
 
     let session;
@@ -481,10 +488,10 @@ export const mutations = {
 
     console.log('[DEBUG-STORE] Calling memoryDB.saveSession');
     try {
-        await memoryDB.saveSession(session);
-        console.log('[DEBUG-STORE] memoryDB.saveSession completed');
+      await memoryDB.saveSession(session);
+      console.log('[DEBUG-STORE] memoryDB.saveSession completed');
     } catch (e) {
-        console.error('[DEBUG-STORE] memoryDB.saveSession failed:', e);
+      console.error('[DEBUG-STORE] memoryDB.saveSession failed:', e);
     }
     saveState();
   },
@@ -535,8 +542,8 @@ export const mutations = {
     if (!text) return;
     // Append with newline if not empty
     store.inputContext = store.inputContext
-      ? store.inputContext + '\n' + text
-      : text;
+        ? store.inputContext + '\n' + text
+        : text;
   },
   clearInputContext() {
     store.inputContext = '';
@@ -586,15 +593,34 @@ export const mutations = {
       throw new Error('Invalid backup format');
     }
 
+    // Handle legacy backups: If sessions are missing in indexedDB backup but present in store backup,
+    // migrate them to indexedDB import data.
+    const indexedData = { ...backup.indexed };
+    if ((!indexedData.sessions || indexedData.sessions.length === 0) &&
+        backup.store.sessions && backup.store.sessions.length > 0) {
+      indexedData.sessions = backup.store.sessions;
+    }
+
     // Restore store state (reactive update)
     Object.keys(backup.store).forEach(key => {
+      // Skip sessions as it will be loaded from DB after import
+      if (key === 'sessions') return;
+
       if (store[key] !== undefined) {
         store[key] = backup.store[key];
       }
     });
 
+    // Restore chat_id to localStorage
+    if (store.chatId) {
+      localStorage.setItem('aihelp_chat_id', store.chatId);
+    }
+
     // Restore IndexedDB
-    await memoryDB.importAll(backup.indexed);
+    await memoryDB.importAll(indexedData);
+
+    // Reload memory and sessions from DB to ensure store is in sync
+    await mutations.loadMemory();
 
     saveState();
     return true;
