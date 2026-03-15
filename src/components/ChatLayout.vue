@@ -1238,16 +1238,22 @@ export default {
       if (match) {
         let url = match[0];
         if (!url.startsWith('http')) {
-            url = 'https://' + url;
+          url = 'https://' + url;
         }
-        // Optional: show a toast or indicator that we are scraping
-        const scraped = await this.scrapeUrl(url);
-        if (scraped) {
-           currentAttachments.push({
-             type: 'file',
-             content: scraped.markdown,
-             name: scraped.title || 'Scraped Content'
-           });
+
+        // Check if URL points to a static file (image, video, archive, document)
+        const isStaticFile = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|mp3|wav|ogg|mp4|avi|mov|webm|zip|rar|7z|tar|gz|pdf|doc|docx|xls|xlsx|ppt|pptx)$/i.test(url.split('?')[0]);
+
+        if (!isStaticFile) {
+          // Optional: show a toast or indicator that we are scraping
+          const scraped = await this.scrapeUrl(url);
+          if (scraped) {
+            currentAttachments.push({
+              type: 'file',
+              content: scraped.markdown,
+              name: scraped.title || 'Scraped Content'
+            });
+          }
         }
       }
 
