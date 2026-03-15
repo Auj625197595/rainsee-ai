@@ -2,9 +2,15 @@
   <div class="wizard-overlay">
     <div class="wizard-bg-glow"></div>
     <div class="wizard-container">
-      
+
       <!-- Step 1: Introduction -->
       <div v-if="step === 1" class="wizard-step step-intro">
+        <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-link-badge">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+          </svg>
+          <span>GitHub 开源项目</span>
+        </a>
         <div class="intro-header">
           <div class="logo-container">
             <div class="logo-glow"></div>
@@ -18,13 +24,19 @@
           <h2 class="hero-title">欢迎使用 <span class="gradient-text">AI 客户端</span></h2>
           <p class="hero-subtitle">纯净 · 安全 · 私有化</p>
         </div>
-        
+
         <div class="info-card">
           <p class="info-text">
             这是一个不直接提供 AI 服务的纯净客户端，您需要自行配置服务接口。
           </p>
+          <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-repo-link">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+            </svg>
+            <span>已开源: Auj625197595/rainsee-ai</span>
+          </a>
         </div>
-        
+
         <div class="feature-grid">
           <div class="feature-card">
             <div class="card-icon-wrapper memory-bg">
@@ -40,7 +52,7 @@
               <p>本地向量数据库，打造懂你的 AI</p>
             </div>
           </div>
-          
+
           <div class="feature-card">
             <div class="card-icon-wrapper privacy-bg">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -166,10 +178,10 @@ export default {
   },
   computed: {
     isValid() {
-      return this.modelForm.name && 
-             this.modelForm.endpoint && 
-             this.modelForm.apiKey && 
-             this.modelForm.model;
+      return this.modelForm.name &&
+          this.modelForm.endpoint &&
+          this.modelForm.apiKey &&
+          this.modelForm.model;
     }
   },
   methods: {
@@ -194,7 +206,7 @@ export default {
 
       // Add the model to the store
       mutations.addModel(newModel);
-      
+
       // Set as active text model
       mutations.setActiveModel(newModel.id, 'text');
 
@@ -208,11 +220,11 @@ export default {
 <style scoped>
 .wizard-overlay {
   position: fixed;
-     
+
   top: 0;
   left: 0;
- bottom:0;
- right:0;
+  bottom:0;
+  right:0;
   background-color: var(--bg-main);
   display: flex;
   align-items: center;
@@ -524,6 +536,57 @@ export default {
 }
 
 /* Step 2 Styles */
+.github-link-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.github-link-badge:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.github-link-badge svg {
+  opacity: 0.9;
+}
+
+.github-repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--accent-color);
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.github-repo-link:hover {
+  background: var(--accent-color);
+  color: white;
+}
+
 .step-header {
   text-align: center;
   margin-bottom: 30px;
