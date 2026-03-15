@@ -5,23 +5,10 @@
 
       <!-- Step 1: Introduction -->
       <div v-if="step === 1" class="wizard-step step-intro">
-        <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-link-badge">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-          </svg>
-          <span>GitHub 开源项目</span>
-        </a>
+
         <div class="intro-header">
-          <div class="logo-container">
-            <div class="logo-glow"></div>
-            <div class="logo-ring"></div>
-            <div class="logo-icon">
-              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-              </svg>
-            </div>
-          </div>
-          <h2 class="hero-title">欢迎使用 <span class="gradient-text">AI 客户端</span></h2>
+
+          <h2 class="hero-title">雨见 <span class="gradient-text">AI 客户端</span></h2>
           <p class="hero-subtitle">纯净 · 安全 · 私有化</p>
         </div>
 
@@ -49,7 +36,7 @@
             </div>
             <div class="card-content">
               <h4>专属记忆</h4>
-              <p>本地向量数据库，打造懂你的 AI</p>
+              <p>本地数据库，打造懂你的 AI</p>
             </div>
           </div>
 
@@ -90,7 +77,7 @@
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
-            <span>无限对话</span>
+            <span>无限制对话</span>
           </div>
         </div>
 
@@ -265,7 +252,7 @@ export default {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 24px;
-  padding: 40px;
+  padding: 20px;
   width: 90%;
   max-width: 600px;
   box-shadow: var(--shadow-card);
@@ -292,7 +279,7 @@ export default {
 /* Intro Header */
 .intro-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   position: relative;
 }
 
@@ -368,10 +355,6 @@ export default {
 
 /* Info Card */
 .info-card {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
   margin-bottom: 32px;
   text-align: center;
 }
@@ -401,7 +384,7 @@ export default {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 20px;
+  padding: 10px;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
