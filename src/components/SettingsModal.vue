@@ -12,6 +12,9 @@
           <li :class="{ active: activeSettingTab === 'model' }" @click="activeSettingTab = 'model'">
             <span>模型</span>
           </li>
+          <li :class="{ active: activeSettingTab === 'appearance' }" @click="activeSettingTab = 'appearance'">
+            <span>外观</span>
+          </li>
           <li :class="{ active: activeSettingTab === 'backup' }" @click="activeSettingTab = 'backup'">
             <span>备份</span>
           </li>
@@ -24,7 +27,7 @@
         <div class="modal-close-btn" @click="close">
           <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </div>
-
+        
         <div v-if="activeSettingTab === 'general'" class="settings-panel">
           <h4>常规设置</h4>
           <div class="form-group">
@@ -36,21 +39,45 @@
           </div>
         </div>
 
+        <div v-if="activeSettingTab === 'appearance'" class="settings-panel">
+          <h4>外观设置</h4>
+          <div class="appearance-card">
+            <div class="appearance-header">
+               <div class="appearance-info">
+                  <span class="appearance-label">对话框文字大小</span>
+                  <span class="appearance-value">{{ localSettings.fontSize }}px</span>
+               </div>
+               <div class="slider-wrapper">
+                  <input type="range" min="12" max="24" step="1" 
+                         v-model.number="localSettings.fontSize" 
+                         class="modern-slider">
+               </div>
+            </div>
+            
+            <div >
+              <div class="preview-bubble" :style="{ fontSize: localSettings.fontSize + 'px' }">
+                <span class="bubble-icon">✨</span>
+                <span class="bubble-text">这是调整后的文字显示效果</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="activeSettingTab === 'model'" class="settings-panel">
           <div class="settings-header">
             <h4>模型配置</h4>
             <button v-if="!editingModelId" class="btn-text" @click="startAddModel">+ 添加模型</button>
           </div>
-
+          
           <!-- Model List -->
           <div v-if="!editingModelId" class="model-list-container">
             <!-- Text Generation Models -->
             <div class="model-type-section">
               <h5>文字合成模型 (Text Generation)</h5>
               <div class="model-list">
-                <div v-for="model in store.settings.models.filter(m => m.type === 'text' || !m.type)"
-                     :key="model.id" class="model-item"
-                     :class="{ active: store.settings.activeTextModelId === model.id }"
+                <div v-for="model in store.settings.models.filter(m => m.type === 'text' || !m.type)" 
+                     :key="model.id" class="model-item" 
+                     :class="{ active: store.settings.activeTextModelId === model.id }" 
                      @click="selectModelByType(model.id, 'text')">
                   <div class="model-info">
                     <div class="model-name">{{ model.name }}</div>
@@ -72,9 +99,9 @@
             <div class="model-type-section">
               <h5>文生图模型 (Text-to-Image)</h5>
               <div class="model-list">
-                <div v-for="model in store.settings.models.filter(m => m.type === 't2i')"
-                     :key="model.id" class="model-item"
-                     :class="{ active: store.settings.activeT2iModelId === model.id }"
+                <div v-for="model in store.settings.models.filter(m => m.type === 't2i')" 
+                     :key="model.id" class="model-item" 
+                     :class="{ active: store.settings.activeT2iModelId === model.id }" 
                      @click="selectModelByType(model.id, 't2i')">
                   <div class="model-info">
                     <div class="model-name">{{ model.name }}</div>
@@ -99,9 +126,9 @@
             <div class="model-type-section">
               <h5>图生图模型 (Image-to-Image)</h5>
               <div class="model-list">
-                <div v-for="model in store.settings.models.filter(m => m.type === 'i2i')"
-                     :key="model.id" class="model-item"
-                     :class="{ active: store.settings.activeI2iModelId === model.id }"
+                <div v-for="model in store.settings.models.filter(m => m.type === 'i2i')" 
+                     :key="model.id" class="model-item" 
+                     :class="{ active: store.settings.activeI2iModelId === model.id }" 
                      @click="selectModelByType(model.id, 'i2i')">
                   <div class="model-info">
                     <div class="model-name">{{ model.name }}</div>
@@ -165,8 +192,30 @@
         </div>
 
         <div v-if="activeSettingTab === 'backup'" class="settings-panel">
-          <h4>备份</h4>
+          <h4>备份与同步</h4>
           <div class="backup-actions">
+            <!-- Cloud Backup Section -->
+            <div class="backup-section cloud-backup">
+              <h5>云端同步</h5>
+              <p>将当前的所有聊天记录、设置、以及记忆系统数据同步到云端。</p>
+              
+              <div v-if="!store.token">
+                <div v-if="!showQRCode" class="login-prompt">
+                    <button class="btn-primary" @click="handleLoginClick">登录以同步数据</button>
+                  </div>
+                  <LoginQRCode v-else @cancel="showQRCode = false" />
+                </div>
+              
+              <div v-else class="cloud-actions">
+                <div class="user-status">
+                  <span class="status-dot online"></span>
+                  <span v-if="store.userinfo">已登录</span>
+                  <button class="btn-text-small" @click="logout">退出登录</button>
+                </div>
+                
+              </div>
+            </div>
+
             <div class="backup-section">
               <h5>备份提醒</h5>
               <p>设置多少天未备份后提醒您。</p>
@@ -181,7 +230,7 @@
               <p>将当前的所有聊天记录、设置、以及记忆系统数据导出为 JSON 文件。</p>
               <button class="btn-primary" @click="exportData">导出完整备份</button>
             </div>
-
+            
             <div class="backup-section">
               <h5>数据导入</h5>
               <p>从 JSON 备份文件中恢复聊天记录和设置。这将会覆盖当前的本地数据。</p>
@@ -201,7 +250,7 @@
           <h4>关于 RainSee AI</h4>
           <div class="about-section">
             <p class="about-desc">RainSee AI 是一个开源的、纯净的、安全且私有化的 AI 客户端。我们致力于提供最优质的 AI 交互体验，同时保障您的数据完全由您自己掌控。</p>
-
+            
             <div class="link-card">
               <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-link">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -231,9 +280,16 @@
 import { store, mutations } from '../store';
 import { saveAs } from 'file-saver';
 import providersData from '../config/providers.json';
+import LoginQRCode from './LoginQRCode.vue';
+import { BACKUP_API_URL } from '@/api/config';
+
+const SERVICEHOST = "https://admin.yujianpay.com/api/";
 
 export default {
   name: 'SettingsModal',
+  components: {
+    LoginQRCode
+  },
   props: {
     isOpen: {
       type: Boolean,
@@ -245,6 +301,8 @@ export default {
     return {
       activeSettingTab: 'model',
       editingModelId: null, // null = list, 'new' = add, ID = edit
+      cloudLoading: false,
+      showQRCode: false,
       modelEditForm: {
         name: '',
         provider: '',
@@ -265,7 +323,8 @@ export default {
         model: '',
         thinkingEnabled: false,
         webSearchEnabled: false,
-        imageGenEnabled: false
+        imageGenEnabled: false,
+        fontSize: 15
       }
     };
   },
@@ -294,6 +353,7 @@ export default {
       if (newVal) {
         // Reset editing state
         this.editingModelId = null;
+        this.showQRCode = false;
         // Load general settings
         this.localSettings = { ...store.settings };
       }
@@ -308,7 +368,8 @@ export default {
       mutations.setSettings({
         thinkingEnabled: this.localSettings.thinkingEnabled,
         webSearchEnabled: this.localSettings.webSearchEnabled,
-        imageGenEnabled: this.localSettings.imageGenEnabled
+        imageGenEnabled: this.localSettings.imageGenEnabled,
+        fontSize: this.localSettings.fontSize
       });
       this.close();
     },
@@ -343,21 +404,21 @@ export default {
     },
     handleProviderChange() {
       if (!this.modelEditForm.provider) return;
-
+      
       const provider = this.providers.find(p => p.name === this.modelEditForm.provider || p.id === this.modelEditForm.provider);
       if (provider) {
         // Auto-fill name if empty
         this.modelEditForm.name = this.modelEditForm.name || provider.name;
-
+        
         // Check if current type is supported by the provider, if not default to 'text'
         if (this.modelEditForm.type && !provider.configs[this.modelEditForm.type]) {
           this.modelEditForm.type = 'text';
         }
-
+        
         // Use current type or default to 'text'
         const type = this.modelEditForm.type || 'text';
         const config = provider.configs[type] || provider.configs['text'];
-
+        
         if (config) {
           this.modelEditForm.endpoint = config.endpoint;
           this.modelEditForm.model = config.model;
@@ -408,6 +469,114 @@ export default {
       const days = parseInt(value, 10);
       if (days > 0) {
         mutations.setBackupReminderDays(days);
+      }
+    },
+    // Cloud Sync Methods
+    handleLoginClick() {
+      if (typeof JSInterface !== 'undefined') {
+        const loginKey = JSInterface.loginKey;
+        if (loginKey) {
+          mutations.setToken(loginKey);
+          this.$emit('login-success');
+        } else {
+          alert('请先在浏览器中登录');
+        }
+      } else {
+        this.showQRCode = true;
+      }
+    },
+    logout() {
+      mutations.logout();
+    },
+    async uploadCloudBackup() {
+      if (!store.token) return;
+      this.cloudLoading = true;
+      try {
+        const backupData = await mutations.getFullBackup();
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: JSON.stringify({
+            "token": store.token,
+             action: 'setCloudBackup',
+             data: JSON.stringify(backupData)
+          })
+        };
+
+        const response = await fetch(BACKUP_API_URL, requestOptions);
+        const result = await response.json();
+        
+        if (result.logout || result.code === 401) {
+          this.logout();
+          alert('登录已失效，请重新登录。');
+          return;
+        }
+
+        if (result.code === 0 || result.status === 'success' || (result.data && result.data.code === 0)) {
+          alert('云端备份成功！');
+          mutations.updateLastBackupTime();
+        } else {
+          throw new Error(result.message || '备份失败');
+        }
+      } catch (e) {
+        console.error('Cloud backup failed:', e);
+        alert('云端备份失败: ' + e.message);
+      } finally {
+        this.cloudLoading = false;
+      }
+    },
+    async downloadCloudBackup() {
+      if (!store.token) return;
+      if (!confirm('从云端恢复将会覆盖当前所有本地数据。确定要继续吗？')) return;
+      
+      this.cloudLoading = true;
+      try {
+        const myHeaders = new Headers();
+       
+        myHeaders.append("Content-Type", "application/json");
+
+        const requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: JSON.stringify({
+            "token": store.token,
+             action: 'getCloudBackup'
+          })
+        };
+
+        const response = await fetch(BACKUP_API_URL, requestOptions);
+        const result = await response.json();
+        
+        if (result.logout || result.code === 401) {
+          this.logout();
+          alert('登录已失效，请重新登录。');
+          return;
+        }
+
+        let cloudData = null;
+        if (result.data && result.data.ret) {
+           cloudData = JSON.parse(result.data.ret);
+        } else if (result.ret) {
+           cloudData = JSON.parse(result.ret);
+        } else if (typeof result === 'object' && result.store) {
+           cloudData = result;
+        }
+
+        if (cloudData) {
+          await mutations.restoreFromBackup(cloudData);
+          alert('云端恢复成功，页面将刷新以应用更改。');
+          window.location.reload();
+        } else {
+          alert('云端没有找到备份数据。');
+        }
+      } catch (e) {
+        console.error('Cloud restore failed:', e);
+        alert('云端恢复失败: ' + e.message);
+      } finally {
+        this.cloudLoading = false;
       }
     },
     // Backup & Restore Methods
@@ -528,7 +697,8 @@ export default {
 }
 
 .settings-nav li {
-  padding: 0.75rem 1rem;
+  padding: 6px;
+  text-align:center;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -750,6 +920,62 @@ export default {
   background-color: rgba(239, 68, 68, 0.1);
 }
 
+/* Cloud Sync Section */
+.cloud-backup {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(0, 86, 179, 0.05) 100%);
+  border: 1px solid rgba(0, 123, 255, 0.1);
+}
+
+[data-theme="dark"] .cloud-backup {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 86, 179, 0.1) 100%);
+  border-color: rgba(0, 123, 255, 0.2);
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.login-prompt {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.status-dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.btn-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-text-small {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-left: auto;
+}
+
+.btn-text-small:hover {
+  text-decoration: underline;
+}
+
 /* Backup Actions */
 .backup-section {
   padding: 1rem;
@@ -921,5 +1147,131 @@ export default {
   font-size: 0.8rem;
   opacity: 0.7;
   font-family: monospace;
+}
+
+/* Appearance Settings Styles */
+.appearance-card {
+  background: var(--bg-secondary, #fdfdfd);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .appearance-card {
+  background: #252525;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.appearance-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.appearance-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appearance-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.appearance-value {
+  background: #007aff;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+.slider-wrapper {
+  padding: 8px 0;
+}
+
+.modern-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  outline: none;
+  transition: background 0.2s;
+}
+
+[data-theme="dark"] .modern-slider {
+  background: #444;
+}
+
+.modern-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #007aff;
+  border: 3px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.modern-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 14px rgba(0, 122, 255, 0.5);
+}
+
+.modern-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background: rgba(0, 122, 255, 0.03);
+  border-radius: 12px;
+  border: 1px dashed rgba(0, 122, 255, 0.2);
+}
+
+[data-theme="dark"] .modern-preview {
+  background: rgba(0, 122, 255, 0.05);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.preview-bubble {
+  padding: 14px 20px;
+  background: white;
+  color: #333;
+  border-radius: 20px 20px 20px 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 90%;
+  animation: float 3s ease-in-out infinite;
+}
+
+[data-theme="dark"] .preview-bubble {
+  background: #333;
+  color: #eee;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.bubble-icon {
+  font-size: 1.2em;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
 }
 </style>

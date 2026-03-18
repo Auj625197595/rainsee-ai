@@ -15,13 +15,13 @@
           <span>新的会话</span>
         </button>
       </div>
-
+      
       <div class="history-list">
         <div class="history-item" :class="{ active: messages.length > 0 && !currentSessionId }" @click="selectCurrentSession">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
           <span>当前会话</span>
         </div>
-
+        
         <div v-for="session in sessions" :key="session.id" class="history-item" :class="{ active: currentSessionId === session.id }" @click="loadSession(session.id)">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
           <span class="session-title">{{ session.title }}</span>
@@ -33,17 +33,25 @@
 
       <div class="sidebar-footer">
         <button class="icon-btn settings-btn" @click="toggleSettings" title="Settings">
-          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
         </button>
         <button class="icon-btn theme-toggle" @click="toggleTheme" title="Toggle Theme">
           <!-- Sun Icon -->
-          <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="20" height="20"><path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>
+          <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
           <!-- Moon Icon -->
-          <svg v-else viewBox="0 0 24 24" width="20" height="20"><path d="M9 2c-1.05 0-2.05.16-3 .46 4.91 3.73 3.66 12.01-1.35 15.44 3.42 2.34 8.35 1.57 10.89-1.85 2.54-3.41 1.77-8.35-1.64-10.88C12.8 4.11 10.95 2 9 2z"/></svg>
+          <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+          </svg>
         </button>
       </div>
     </aside>
-
+    
     <!-- Mobile Overlay -->
     <div class="sidebar-overlay" v-if="isSidebarOpen" @click="toggleSidebar"></div>
 
@@ -60,7 +68,7 @@
           </button>
           <span class="header-title">New Chat</span>
         </div>
-
+        
         <div class="header-right">
           <transition name="bounce">
             <button v-if="showBackupReminder" class="backup-btn-animated" @click="handleBackupClick" :title="backupReminderText">
@@ -73,9 +81,9 @@
 
       <transition name="fade">
         <div v-if="isCharacterManagerOpen" class="character-manager-overlay">
-          <CharacterManager @close="isCharacterManagerOpen = false" />
-        </div>
-      </transition>
+        <CharacterManager @close="isCharacterManagerOpen = false" />
+      </div>
+    </transition>
 
 
 
@@ -83,7 +91,7 @@
         <div v-if="messages.length === 0" class="empty-state">
           <h3>How can I help you today?</h3>
         </div>
-
+        
         <div v-for="(msg, index) in messages" :key="index" :class="['message-row', msg.role]">
           <div class="message-wrapper"
                @mouseenter="handleMouseEnter(index)"
@@ -91,11 +99,11 @@
                @click.stop="handleMessageClick(index)"
           >
             <div class="message-content">
-              <!-- Thinking Process Block -->
-              <div v-if="msg.thinking" class="thinking-block" :class="{ 'is-thinking': msg.isThinking && !msg.content }">
-                <details :open="msg.isThinking && index === messages.length - 1">
-                  <summary>
-                    <div class="thinking-header">
+            <!-- Thinking Process Block -->
+            <div v-if="msg.thinking" class="thinking-block" :class="{ 'is-thinking': msg.isThinking && !msg.content }">
+              <details :open="msg.isThinking && index === messages.length - 1">
+                <summary>
+                  <div class="thinking-header">
                     <span class="thinking-icon">
                       <!-- Search Icon if searching -->
                       <svg v-if="msg.isSearch" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -108,104 +116,104 @@
                         <path d="M12 6v6l4 2"></path>
                       </svg>
                     </span>
-                      <span class="thinking-title">{{ msg.isSearch ? '联网搜索过程与结果' : '思考过程' }}</span>
-                      <span class="chevron-icon">
+                    <span class="thinking-title">{{ msg.isSearch ? '联网搜索过程与结果' : '思考过程' }}</span>
+                    <span class="chevron-icon">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                       </svg>
                     </span>
-                    </div>
-                  </summary>
-                  <div class="thinking-content">
-                    <MarkdownRenderer :content="msg.thinking" @copy-code="handleCopyCodeEvent" />
                   </div>
-                </details>
-              </div>
-
-              <!-- Message Text or Loading Animation -->
-              <div v-if="msg.attachments && msg.attachments.length > 0" class="message-attachments">
-                <div v-for="(att, i) in msg.attachments" :key="i" class="message-attachment-item">
-                  <img v-if="att.type === 'image'" :src="att.url" alt="Attachment" loading="lazy" style="max-width: 300px; max-height: 300px; border-radius: 8px; cursor: pointer; display: block;" @click="openImage(att.url)">
-                  <div v-else-if="att.type === 'file'" class="file-attachment-bubble">
-                    <div class="file-icon-small">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    </div>
-                    <span>{{ att.name }}</span>
-                  </div>
+                </summary>
+                <div class="thinking-content">
+                  <MarkdownRenderer :content="msg.thinking" @copy-code="handleCopyCodeEvent" />
                 </div>
-              </div>
-              <!-- Legacy support for old messages -->
-              <div v-else-if="msg.imageUrl" class="message-attachment">
+              </details>
+            </div>
+            
+            <!-- Message Text or Loading Animation -->
+            <div v-if="msg.attachments && msg.attachments.length > 0" class="message-attachments">
+                <div v-for="(att, i) in msg.attachments" :key="i" class="message-attachment-item">
+                    <img v-if="att.type === 'image'" :src="att.url" alt="Attachment" loading="lazy" style="max-width: 300px; max-height: 300px; border-radius: 8px; cursor: pointer; display: block;" @click="openImage(att.url)">
+                    <div v-else-if="att.type === 'file'" class="file-attachment-bubble">
+                         <div class="file-icon-small">
+                           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                         </div>
+                         <span>{{ att.name }}</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Legacy support for old messages -->
+            <div v-else-if="msg.imageUrl" class="message-attachment">
                 <img :src="msg.imageUrl" alt="Attachment" loading="lazy" style="max-width: 300px; max-height: 300px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; display: block;" @click="openImage(msg.imageUrl)">
-              </div>
-
-              <div v-if="!msg.content && !msg.thinking && !msg.isGeneratingImage && msg.role === 'assistant'" class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-
-              <!-- Skeleton Loader for Image Generation -->
-              <div v-if="msg.isGeneratingImage" class="image-skeleton-loader">
+            </div>
+            
+            <div v-if="!msg.content && !msg.thinking && !msg.isGeneratingImage && msg.role === 'assistant'" class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            
+            <!-- Skeleton Loader for Image Generation -->
+            <div v-if="msg.isGeneratingImage" class="image-skeleton-loader">
                 <div class="skeleton-image">
-                  <div class="shimmer"></div>
-                  <div class="skeleton-icon">
-                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                  </div>
+                    <div class="shimmer"></div>
+                    <div class="skeleton-icon">
+                        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    </div>
                 </div>
                 <div class="skeleton-text">AI 正在绘图...</div>
-              </div>
+            </div>
 
-              <div v-else-if="msg.role === 'user'" class="text-content user-text">{{ msg.content }}</div>
-              <div v-else class="text-content">
+            <div v-else-if="msg.role === 'user'" class="text-content user-text" :style="{ fontSize: (store.settings.fontSize || 16) + 'px' }">{{ msg.content }}</div>
+            <div v-else class="text-content" :style="{ fontSize: (store.settings.fontSize || 16) + 'px !important' }">
                 <MarkdownRenderer :content="msg.content" @copy-code="handleCopyCodeEvent" />
-              </div>
-
-              <!-- Command Confirmation Embedded -->
-              <div v-if="isConfirmDialogOpen && index === messages.length - 1 && msg.role === 'assistant'" class="command-embed-container">
-                <div class="command-embed-header">
+            </div>
+            
+            <!-- Command Confirmation Embedded -->
+            <div v-if="isConfirmDialogOpen && index === messages.length - 1 && msg.role === 'assistant'" class="command-embed-container">
+               <div class="command-embed-header">
                   <span class="command-icon">⚡</span>
                   <span>AI 请求执行命令</span>
-                </div>
-                <div class="command-embed-content">
+               </div>
+               <div class="command-embed-content">
                   <pre>{{ pendingCommand }}</pre>
-                </div>
-                <div class="command-embed-actions">
+               </div>
+               <div class="command-embed-actions">
                   <button class="embed-btn cancel" @click="cancelCommand">拒绝</button>
                   <button class="embed-btn confirm" @click="confirmCommand">允许执行</button>
-                </div>
-              </div>
-            </div>
-            <div v-if="msg.role === 'user'" class="message-actions" :class="{ visible: activeMessageIndex === index }">
-              <button class="action-btn" @click.stop="copyMessage(msg.content)">复制</button>
-              <button class="action-btn" @click.stop="editMessage(index, msg)">编辑</button>
-            </div>
-            <div v-if="msg.role === 'assistant'" class="message-actions" :class="{ visible: activeMessageIndex === index }">
-              <button class="action-btn" @click.stop="copyMessage(msg.content)">复制</button>
-              <div class="export-dropdown-wrapper">
-                <button class="action-btn" @click.stop="toggleExportMenu(index)">导出 ▼</button>
-                <div v-if="exportMenuIndex === index" class="export-menu">
-                  <div class="export-menu-content">
-                    <div class="export-item" @click.stop="exportMessage(index, msg.content, 'pdf')">导出 PDF</div>
-                    <div class="export-item" @click.stop="exportMessage(index, msg.content, 'word')">导出 Word</div>
-                    <div class="export-item" @click.stop="exportMessage(index, msg.content, 'markdown')">导出 Markdown</div>
-                  </div>
-                </div>
-              </div>
+               </div>
             </div>
           </div>
+          <div v-if="msg.role === 'user'" class="message-actions" :class="{ visible: activeMessageIndex === index || isMobile }">
+            <button class="action-btn" @click.stop="copyMessage(msg.content)">复制</button>
+            <button class="action-btn" @click.stop="editMessage(index, msg)">编辑</button>
+          </div>
+          <div v-if="msg.role === 'assistant'" class="message-actions" :class="{ visible: activeMessageIndex === index || isMobile }">
+             <button class="action-btn" @click.stop="copyMessage(msg.content)">复制</button>
+             <div class="export-dropdown-wrapper">
+                <button class="action-btn" @click.stop="toggleExportMenu(index)">导出 ▼</button>
+                <div v-if="exportMenuIndex === index" class="export-menu">
+                   <div class="export-menu-content">
+                      <div class="export-item" @click.stop="exportMessage(index, msg.content, 'pdf')">导出 PDF</div>
+                      <div class="export-item" @click.stop="exportMessage(index, msg.content, 'word')">导出 Word</div>
+                      <div class="export-item" @click.stop="exportMessage(index, msg.content, 'markdown')">导出 Markdown</div>
+                   </div>
+                </div>
+             </div>
+          </div>
+          </div>
         </div>
-
+        
 
       </div>
 
       <!-- Input Area -->
-      <div
-          class="input-area"
-          :class="{ 'dragging': isDragging }"
-          @dragover.prevent="handleDragOver"
-          @dragleave.prevent="handleDragLeave"
-          @drop.prevent="handleDrop"
+      <div 
+        class="input-area" 
+        :class="{ 'dragging': isDragging }"
+        @dragover.prevent="handleDragOver"
+        @dragleave.prevent="handleDragLeave"
+        @drop.prevent="handleDrop"
       >
         <!-- Expanded Role List Popover (Removed in favor of CharacterManager) -->
 
@@ -228,52 +236,53 @@
 
         <div class="input-wrapper">
           <div v-if="(attachments.length > 0 || isUploading)" class="attachment-preview">
-            <div v-if="isUploading" class="uploading-spinner">
-              <svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>
-              <span>Uploading...</span>
-            </div>
-
-            <div class="attachments-list" v-if="attachments.length > 0">
-              <div v-for="(att, index) in attachments" :key="index" class="preview-item">
-                <!-- Image Preview -->
-                <div v-if="att.type === 'image'" class="preview-img-container">
-                  <img :src="att.url" :alt="att.name">
-                  <button class="remove-btn" @click="removeAttachment(index)" title="Remove attachment">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                  </button>
-                </div>
-                <!-- File Preview -->
-                <div v-else class="preview-file-container">
-                  <div class="file-icon">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                  </div>
-                  <span class="file-name">{{ att.name }}</span>
-                  <button class="remove-btn" @click="removeAttachment(index)" title="Remove attachment">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+             <div v-if="isUploading" class="uploading-spinner">
+                <svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>
+                <span>Uploading...</span>
+             </div>
+             
+             <div class="attachments-list" v-if="attachments.length > 0">
+                 <div v-for="(att, index) in attachments" :key="index" class="preview-item">
+                    <!-- Image Preview -->
+                    <div v-if="att.type === 'image'" class="preview-img-container">
+                       <img :src="att.url" :alt="att.name">
+                       <button class="remove-btn" @click="removeAttachment(index)" title="Remove attachment">
+                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                       </button>
+                    </div>
+                    <!-- File Preview -->
+                    <div v-else class="preview-file-container">
+                       <div class="file-icon">
+                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                       </div>
+                       <span class="file-name">{{ att.name }}</span>
+                       <button class="remove-btn" @click="removeAttachment(index)" title="Remove attachment">
+                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                       </button>
+                    </div>
+                 </div>
+             </div>
           </div>
           <!-- Textarea auto-resize logic needed in script -->
-          <textarea
-              v-model="inputText"
-              placeholder="有什么可以帮你的吗..."
-              rows="1"
-              @input="adjustHeight"
-              @keydown.enter.exact.prevent="sendMessage"
-              @paste="handlePaste"
+          <textarea 
+            v-model="inputText" 
+            placeholder="有什么可以帮你的吗..." 
+            rows="1"
+            @focus="handleFocus"
+            @input="adjustHeight"
+            @keydown.enter.exact.prevent="sendMessage"
+            @paste="handlePaste"
           ></textarea>
-
+          
           <div class="toolbar">
             <div class="left-tools">
               <!-- Role Selector Button or Active Role Chip -->
               <div class="tool-group">
-                <button
-                    v-if="currentRole.id === 'general'"
-                    class="tool-tab role-selector"
-                    @click="toggleCharacterManager"
-                    title="选择角色"
+                <button 
+                  v-if="currentRole.id === 'general'"
+                  class="tool-tab role-selector" 
+                  @click="toggleCharacterManager"
+                  title="选择角色"
                 >
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -281,12 +290,12 @@
                   </svg>
                   <span>角色</span>
                 </button>
-
-                <div
-                    v-else
-                    class="active-role-chip"
-                    title="点击更换角色"
-                    @click="toggleCharacterManager"
+                
+                <div 
+                  v-else 
+                  class="active-role-chip"
+                  title="点击更换角色"
+                  @click="toggleCharacterManager"
                 >
                   <span class="role-icon">{{ currentRole.icon }}</span>
                   <span class="role-name">{{ currentRole.name }}</span>
@@ -297,12 +306,12 @@
               <div class="tool-divider"></div>
 
               <!-- Mobile Mode Trigger -->
-              <button
-                  v-if="isMobile"
-                  class="tool-tab mobile-mode-trigger"
-                  :class="{ active: isModeExpanded }"
-                  @click="isModeExpanded = !isModeExpanded"
-                  title="Select Modes"
+              <button 
+                v-if="isMobile"
+                class="tool-tab mobile-mode-trigger" 
+                :class="{ active: isModeExpanded }"
+                @click="isModeExpanded = !isModeExpanded"
+                title="Select Modes"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 5v14M5 12h14" v-if="!isModeExpanded"/>
@@ -312,12 +321,12 @@
               </button>
 
               <!-- Thinking Toggle -->
-              <button
-                  v-show="!isMobile || thinkingEnabled"
-                  class="tool-tab"
-                  :class="{ active: thinkingEnabled }"
-                  @click="isMobile ? (isModeExpanded = true) : (thinkingEnabled = !thinkingEnabled)"
-                  title="Deep Thinking Mode"
+              <button 
+                v-show="!isMobile || thinkingEnabled"
+                class="tool-tab" 
+                :class="{ active: thinkingEnabled }"
+                @click="isMobile ? (isModeExpanded = true) : (thinkingEnabled = !thinkingEnabled)"
+                title="Deep Thinking Mode"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path>
@@ -327,12 +336,12 @@
               </button>
 
               <!-- Web Search Toggle -->
-              <button
-                  v-show="!isMobile || webSearchEnabled"
-                  class="tool-tab"
-                  :class="{ active: webSearchEnabled }"
-                  @click="isMobile ? (isModeExpanded = true) : (webSearchEnabled = !webSearchEnabled)"
-                  title="Web Search Mode"
+              <button 
+                v-show="!isMobile || webSearchEnabled"
+                class="tool-tab" 
+                :class="{ active: webSearchEnabled }"
+                @click="isMobile ? (isModeExpanded = true) : (webSearchEnabled = !webSearchEnabled)"
+                title="Web Search Mode"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
@@ -342,12 +351,12 @@
               </button>
 
               <!-- Image Generation Toggle -->
-              <button
-                  v-show="!isMobile || imageGenEnabled"
-                  class="tool-tab"
-                  :class="{ active: imageGenEnabled }"
-                  @click="isMobile ? (isModeExpanded = true) : (imageGenEnabled = !imageGenEnabled)"
-                  title="Image Generation Mode"
+              <button 
+                v-show="!isMobile || imageGenEnabled"
+                class="tool-tab" 
+                :class="{ active: imageGenEnabled }"
+                @click="isMobile ? (isModeExpanded = true) : (imageGenEnabled = !imageGenEnabled)"
+                title="Image Generation Mode"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -356,14 +365,14 @@
                 </svg>
                 <span>AI绘图</span>
               </button>
-
+              
               <!-- Plan Mode Toggle -->
-              <button
-                  v-show="!isMobile || planEnabled"
-                  class="tool-tab"
-                  :class="{ active: planEnabled }"
-                  @click="isMobile ? (isModeExpanded = true) : (planEnabled = !planEnabled)"
-                  title="Plan Mode"
+              <button 
+                v-show="!isMobile || planEnabled"
+                class="tool-tab" 
+                :class="{ active: planEnabled }"
+                @click="isMobile ? (isModeExpanded = true) : (planEnabled = !planEnabled)"
+                title="Plan Mode"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -374,7 +383,7 @@
                 </svg>
                 <span>Plan模式</span>
               </button>
-
+              
               <!-- Attachment -->
               <button class="icon-btn attachment-btn" title="Attach File" @click="$refs.fileInput.click()">
                 <svg viewBox="0 0 24 24" width="20" height="20"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
@@ -390,7 +399,7 @@
         </div>
       </div>
     </main>
-
+    
     <!-- Mobile Mode Selection Modal -->
     <div v-if="isMobile && isModeExpanded" class="mobile-mode-modal-overlay" @click.self="isModeExpanded = false">
       <div class="mobile-mode-modal">
@@ -452,7 +461,7 @@
               <div class="checkbox" :class="{ checked: imageGenEnabled }"></div>
             </div>
           </div>
-
+          
           <!-- Plan Mode -->
           <div class="mode-item" :class="{ active: planEnabled }" @click="planEnabled = !planEnabled">
             <div class="mode-icon">
@@ -645,22 +654,22 @@ export default {
       // Priority 1: Current role
       // Priority 2: Recently used (from history)
       // Priority 3: Default order
-
+      
       const history = store.roleSettings.roleHistory || [];
       const currentId = store.roleSettings.activeRoleId;
-
+      
       // Get all roles map for quick access
       const rolesMap = new Map(this.allRoles.map(r => [r.id, r]));
-
+      
       const result = [];
       const addedIds = new Set();
-
+      
       // 1. Current Role
       if (rolesMap.has(currentId)) {
         result.push(rolesMap.get(currentId));
         addedIds.add(currentId);
       }
-
+      
       // 2. History
       for (const id of history) {
         if (!addedIds.has(id) && rolesMap.has(id)) {
@@ -668,7 +677,7 @@ export default {
           addedIds.add(id);
         }
       }
-
+      
       // 3. Fill with remaining roles
       for (const role of this.allRoles) {
         if (!addedIds.has(role.id)) {
@@ -676,16 +685,22 @@ export default {
           addedIds.add(role.id);
         }
       }
-
+      
       return result;
     }
   },
   mounted() {
     window.addEventListener('resize', this.handleResize);
     this.checkBackupStatus();
+    
+    // Auto sync check
+    if (mutations && mutations.checkCloudSync) {
+        mutations.checkCloudSync();
+    }
+
     // Listen for external doc additions
     window.addEventListener('rainshome-doc-added', this.handleDocAdded);
-
+    
     // Add scroll and interaction listeners
     if (this.$refs.messagesContainer) {
       const container = this.$refs.messagesContainer;
@@ -707,6 +722,11 @@ export default {
     }
   },
   methods: {
+    handleFocus() {
+        if (mutations && mutations.checkCloudSync) {
+            mutations.checkCloudSync();
+        }
+    },
     handleResize() {
       this.windowWidth = window.innerWidth;
     },
@@ -719,10 +739,10 @@ export default {
     handleScroll() {
       const container = this.$refs.messagesContainer;
       if (!container) return;
-
+      
       const threshold = 5; // Reduce threshold for more precise detection
       const isNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < threshold;
-
+      
       // Update lock state based on user scroll
       this.isLockedToBottom = isNearBottom;
 
@@ -733,7 +753,7 @@ export default {
     },
     handleCopyCodeEvent(text, target) {
       this.copyMessage(text);
-
+      
       const originalText = target.innerText;
       target.innerText = '已复制';
       setTimeout(() => {
@@ -750,7 +770,7 @@ export default {
         if (codeBlock) {
           const text = codeBlock.innerText || codeBlock.textContent;
           this.copyMessage(text);
-
+          
           const originalText = target.innerText;
           target.innerText = '已复制';
           setTimeout(() => {
@@ -792,11 +812,11 @@ export default {
     async updateCoreMemoryFromSession() {
       // Mock API call to update Soul, User, Memory
       const lastUserMsg = store.history.filter(m => m.role === 'user').pop();
-
+      
       if (!lastUserMsg) return;
 
       console.log('Updating core memory from session...');
-
+      
       // Prepare Data
       const memoryData = {
         soul: store.soul,
@@ -806,16 +826,16 @@ export default {
       };
 
       try {
-        const updatedMemory = await updateMemory(memoryData);
-        if (updatedMemory) {
-          // Update store and DB
-          if (updatedMemory.soul) await mutations.updateCoreMemory('soul', updatedMemory.soul);
-          if (updatedMemory.user) await mutations.updateCoreMemory('user', updatedMemory.user);
-          if (updatedMemory.memory) await mutations.updateCoreMemory('memory', updatedMemory.memory);
-          console.log('Core memory updated successfully');
-        }
+          const updatedMemory = await updateMemory(memoryData);
+          if (updatedMemory) {
+             // Update store and DB
+             if (updatedMemory.soul) await mutations.updateCoreMemory('soul', updatedMemory.soul);
+             if (updatedMemory.user) await mutations.updateCoreMemory('user', updatedMemory.user);
+             if (updatedMemory.memory) await mutations.updateCoreMemory('memory', updatedMemory.memory);
+             console.log('Core memory updated successfully');
+          }
       } catch (e) {
-        console.error('Core memory update failed', e);
+          console.error('Core memory update failed', e);
       }
     },
     loadSession(sessionId) {
@@ -867,10 +887,10 @@ export default {
       // Check if we are really leaving the element, not just moving between children
       const rect = this.$el.querySelector('.input-area').getBoundingClientRect();
       if (
-          e.clientX < rect.left ||
-          e.clientX > rect.right ||
-          e.clientY < rect.top ||
-          e.clientY > rect.bottom
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
       ) {
         this.isDragging = false;
       }
@@ -907,72 +927,96 @@ export default {
       if (!file) return;
 
       this.isUploading = true;
-
+      
       try {
         // Check if image or document
         if (file.type.startsWith('image/')) {
-          const formdata = new FormData();
-          formdata.append("file", file);
+            const formdata = new FormData();
+            formdata.append("file", file);
 
-          const requestOptions = {
-            method: 'POST',
-            body: formdata,
-            redirect: 'follow'
-          };
+            const requestOptions = {
+              method: 'POST',
+              body: formdata,
+              redirect: 'follow'
+            };
 
-          const response = await fetch("//picmain.rainsee.cn/api.php", requestOptions);
-          const result = await response.text();
-
-          // Try to parse JSON, fallback to raw text
-          let url = result;
-          try {
-            const json = JSON.parse(result);
-            // Adapt to common response formats
-            if (json.url) url = json.url;
-            else if (json.data && json.data.url) url = json.data.url;
-            else if (json.link) url = json.link;
-          } catch (e) {
-            // Not JSON, treat as raw URL string
-          }
-
-          if (url && url.startsWith('http')) {
-            this.attachments.push({
-              type: 'image',
-              url: url.trim(),
-              name: file.name
-            });
-          } else {
-            console.error('Invalid upload response:', result);
-            alert('Upload failed or returned invalid URL.');
-          }
+            const response = await fetch("//picmain.rainsee.cn/api.php", requestOptions);
+            const result = await response.text();
+            
+            // Try to parse JSON, fallback to raw text
+            let url = result;
+            try {
+                const json = JSON.parse(result);
+                // Adapt to common response formats
+                if (json.url) url = json.url;
+                else if (json.data && json.data.url) url = json.data.url;
+                else if (json.link) url = json.link; 
+            } catch (e) {
+                // Not JSON, treat as raw URL string
+            }
+            
+            if (url && url.startsWith('http')) {
+                 this.attachments.push({
+                   type: 'image',
+                   url: url.trim(),
+                   name: file.name
+                 });
+            } else {
+                 console.error('Invalid upload response:', result);
+                 alert('Upload failed or returned invalid URL.');
+            }
         } else {
-          // Handle document upload
-          const formdata = new FormData();
-          formdata.append("file", file); // Backend expects "file"
+            // Handle document upload
+            const formdata = new FormData();
+            formdata.append("file", file); // Backend expects "file"
+            
+            const requestOptions = {
+               method: 'POST',
+               body: formdata,
+               redirect: 'follow'
+            };
+            
+            // Parallel execution: Get content AND upload for URL
+            const [contentPromise, urlPromise] = [
+                fetch(MARKITDOWN_API_URL, requestOptions),
+                fetch("//picmain.rainsee.cn/api.php", requestOptions)
+            ];
+            
+            const [contentResponse, urlResponse] = await Promise.all([contentPromise, urlPromise]);
 
-          const requestOptions = {
-            method: 'POST',
-            body: formdata,
-            redirect: 'follow'
-          };
-
-          const response = await fetch(MARKITDOWN_API_URL, requestOptions);
-          if (!response.ok) {
-            throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
-          }
-
-          const json = await response.json();
-
-          if (json && json.markdown) {
-            this.attachments.push({
-              type: 'file',
-              content: json.markdown,
-              name: file.name
-            });
-          } else {
-            console.error('Invalid document response:', json);
-            alert('Document processing failed.');
-          }
+            if (!contentResponse.ok) {
+                throw new Error(`Upload failed: ${contentResponse.status} ${contentResponse.statusText}`);
+            }
+            
+            const json = await contentResponse.json();
+            
+            // Process URL response
+            let fileUrl = '';
+            try {
+                const urlResult = await urlResponse.text();
+                try {
+                    const urlJson = JSON.parse(urlResult);
+                    if (urlJson.url) fileUrl = urlJson.url;
+                    else if (urlJson.data && urlJson.data.url) fileUrl = urlJson.data.url;
+                    else if (urlJson.link) fileUrl = urlJson.link;
+                } catch (e) {
+                     if (urlResult.startsWith('http')) fileUrl = urlResult.trim();
+                }
+            } catch (e) {
+                console.error('Failed to get file URL:', e);
+            }
+            
+            if (json && json.markdown) {
+                this.attachments.push({
+                   type: 'file',
+                   content: json.markdown,
+                   url: fileUrl,
+                   name: file.name
+                });
+            } else {
+                console.error('Invalid document response:', json);
+                alert('Document processing failed.');
+            }
         }
 
       } catch (error) {
@@ -1019,7 +1063,7 @@ export default {
     exportMessage(index, content, format) {
       console.log("content",content);
       this.exportMenuIndex = -1;
-
+      
       if (format === 'markdown') {
         const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
         saveAs(blob, `chat-export-${Date.now()}.md`);
@@ -1041,11 +1085,11 @@ export default {
         wrapper.style.left = '-9999px';
         wrapper.style.top = '0';
         // Set width to simulate A4 paper content area (approx) to ensure correct layout
-        wrapper.style.width = '700px';
-
+        wrapper.style.width = '700px'; 
+        
         // Apply Chinese-friendly font settings
         contentClone.style.fontFamily = '"SimSun", "宋体", serif';
-
+        
         wrapper.appendChild(contentClone);
         document.body.appendChild(wrapper);
 
@@ -1056,7 +1100,7 @@ export default {
           html2canvas: { scale: 2, useCORS: true, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-
+        
         html2pdf().set(opt).from(contentClone).save().finally(() => {
           if (document.body.contains(wrapper)) {
             document.body.removeChild(wrapper);
@@ -1065,8 +1109,8 @@ export default {
 
       } else if (format === 'word') {
         const header = `
-          <html xmlns:o='urn:schemas-microsoft-com:office:office'
-                xmlns:w='urn:schemas-microsoft-com:office:word'
+          <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                xmlns:w='urn:schemas-microsoft-com:office:word' 
                 xmlns='http://www.w3.org/TR/REC-html40'>
           <head><meta charset='utf-8'><title>Export Document</title>
           <!--[if gte mso 9]>
@@ -1102,7 +1146,7 @@ export default {
           </head><body><div class="Section1">`;
         const footer = "</div></body></html>";
         const sourceHTML = header + contentEl.innerHTML + footer;
-
+        
         const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
         saveAs(blob, `chat-export-${Date.now()}.doc`);
       }
@@ -1119,16 +1163,16 @@ export default {
         // Fallback for non-secure contexts or older browsers
         const textArea = document.createElement("textarea");
         textArea.value = content;
-
+        
         // Ensure textarea is not visible but part of the DOM
         textArea.style.position = "fixed";
         textArea.style.left = "-9999px";
         textArea.style.top = "0";
         document.body.appendChild(textArea);
-
+        
         textArea.focus();
         textArea.select();
-
+        
         try {
           const successful = document.execCommand('copy');
           if (!successful) {
@@ -1137,7 +1181,7 @@ export default {
         } catch (err) {
           console.error('Fallback copy error: ', err);
         }
-
+        
         document.body.removeChild(textArea);
       }
     },
@@ -1189,7 +1233,7 @@ export default {
 
         const response = await fetch(WEBSCRAPE_API_URL, requestOptions);
         const result = await response.json();
-
+        
         if (result.success && result.data && result.data.markdown) {
           return {
             title: result.data.title,
@@ -1205,20 +1249,20 @@ export default {
     async sendMessage(payload, options = {}) {
       this.isConfirmDialogOpen = false;
       this.pendingCommand = '';
-
+      
       const isManual = typeof payload === 'string';
       const text = (isManual ? payload : this.inputText).trim();
       const currentAttachments = isManual ? [] : [...this.attachments];
-
+      
       if ((!text && currentAttachments.length === 0) || this.isSending) return;
 
       this.isSending = true;
-
+      
       if (!isManual) {
         this.inputText = '';
         this.attachments = [];
       }
-
+      
       // Reset textarea height
       this.$nextTick(() => {
         const textarea = this.$el.querySelector('.input-wrapper textarea');
@@ -1226,7 +1270,7 @@ export default {
           this.adjustHeight({ target: textarea });
         }
       });
-
+      
       // Add User Message
       mutations.addMessage({
         role: 'user',
@@ -1255,36 +1299,36 @@ export default {
       if (match) {
         let url = match[0];
         if (!url.startsWith('http')) {
-          url = 'https://' + url;
+            url = 'https://' + url;
         }
-
+        
         // Check if URL points to a static file (image, video, archive, document)
         const isStaticFile = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|mp3|wav|ogg|mp4|avi|mov|webm|zip|rar|7z|tar|gz|pdf|doc|docx|xls|xlsx|ppt|pptx)$/i.test(url.split('?')[0]);
 
         if (!isStaticFile) {
-          // Optional: show a toast or indicator that we are scraping
-          const scraped = await this.scrapeUrl(url);
-          if (scraped) {
-            currentAttachments.push({
-              type: 'file',
-              content: scraped.markdown,
-              name: scraped.title || 'Scraped Content'
-            });
-          }
+            // Optional: show a toast or indicator that we are scraping
+            const scraped = await this.scrapeUrl(url);
+            if (scraped) {
+               currentAttachments.push({
+                 type: 'file',
+                 content: scraped.markdown,
+                 name: scraped.title || 'Scraped Content'
+               });
+            }
         }
       }
-
+      
       this.abortController = new AbortController();
 
       // Prepare Context with Role System Prompt
       let context = store.history.slice(0, -1);
       const rolePrompt = this.currentRole.systemPrompt;
-
+      
       // Inject Core Memory (Soul, User, Memory)
       const soul = store.soul?.personality || '';
       const user = store.user?.profile || '';
       const memory = store.memory?.longTerm ? JSON.stringify(store.memory.longTerm) : '';
-
+      
       const memoryContext = `
 [Core Memory System]
 Soul (Personality): ${soul}
@@ -1294,12 +1338,12 @@ Long-term Memory: ${memory}
 
       let systemContent = rolePrompt || '';
       if (memoryContext) {
-        systemContent = `${systemContent}\n${memoryContext}`;
+          systemContent = `${systemContent}\n${memoryContext}`;
       }
-
+      
       // Plan Mode Logic
       if (this.planEnabled) {
-        options.plan_mode = true;
+          options.plan_mode = true;
       }
 
       if (systemContent) {
@@ -1313,11 +1357,11 @@ Long-term Memory: ${memory}
           const currentMsg = store.history[aiMsgIndex];
           // Collapse thinking block when formal content starts
           if (currentMsg.isThinking) {
-            currentMsg.isThinking = false;
+             currentMsg.isThinking = false;
           }
           // If we were generating image, turn off skeleton once we get content
           if (currentMsg.isGeneratingImage) {
-            currentMsg.isGeneratingImage = false;
+             currentMsg.isGeneratingImage = false;
           }
           currentMsg.content += chunk;
           this.scrollToBottom();
@@ -1346,34 +1390,34 @@ Long-term Memory: ${memory}
           this.abortController = null;
           console.log('[DEBUG] Calling mutations.finalizeLastMessage()');
           try {
-            mutations.finalizeLastMessage();
-            console.log('[DEBUG] mutations.finalizeLastMessage() completed');
+              mutations.finalizeLastMessage();
+              console.log('[DEBUG] mutations.finalizeLastMessage() completed');
           } catch (e) {
-            console.error('[DEBUG] Error in finalizeLastMessage:', e);
+              console.error('[DEBUG] Error in finalizeLastMessage:', e);
           }
-
+          
           // Plan Mode Completion Logic
           const lastMsg = store.history[aiMsgIndex];
           if (this.planEnabled && lastMsg && lastMsg.content.includes('[PLAN_READY]')) {
-            const parts = lastMsg.content.split('[PLAN_READY]');
-            if (parts.length > 1) {
-              const summary = parts[1].trim();
-
-              // Automatically trigger execution with the summarized plan
-              setTimeout(() => {
-                this.planEnabled = false; // Turn off Plan Mode
-                this.sendMessage(`Here is the finalized plan. Please execute it now:\n\n${summary}`);
-              }, 500);
-            }
+              const parts = lastMsg.content.split('[PLAN_READY]');
+              if (parts.length > 1) {
+                  const summary = parts[1].trim();
+                  
+                  // Automatically trigger execution with the summarized plan
+                  setTimeout(() => {
+                      this.planEnabled = false; // Turn off Plan Mode
+                      this.sendMessage(`Here is the finalized plan. Please execute it now:\n\n${summary}`);
+                  }, 500);
+              }
           }
         },
         onError: (err) => {
           if (err.name === 'AbortError') {
-            console.log('Generation stopped by user');
-            this.isSending = false;
-            this.abortController = null;
-            // Optional: Add a system note that generation was stopped?
-            return;
+             console.log('Generation stopped by user');
+             this.isSending = false;
+             this.abortController = null;
+             // Optional: Add a system note that generation was stopped?
+             return;
           }
           console.error(err);
           this.isSending = false;
@@ -1403,37 +1447,37 @@ Long-term Memory: ${memory}
 
       // If not locked to bottom and not forced, do nothing (unless sending, then maybe show tip)
       if (!this.isLockedToBottom && !force) {
-        if (this.isSending) {
-          this.showScrollTip = true;
-        }
-        return;
+          if (this.isSending) {
+              this.showScrollTip = true;
+          }
+          return;
       }
 
       // Optimization: Throttle scroll updates using requestAnimationFrame
       if (this._scrollFrame) {
-        return; // Already scheduled
+          return; // Already scheduled
       }
-
+      
       this._scrollFrame = requestAnimationFrame(() => {
         this._scrollFrame = null;
-
+        
         // Use nextTick to ensure DOM is updated
         this.$nextTick(() => {
-          const targetTop = container.scrollHeight;
-          // Check if we are already at bottom to avoid unnecessary setting (which might trigger scroll events)
-          if (Math.abs(container.scrollTop - (targetTop - container.clientHeight)) < 2) {
-            return;
-          }
-
-          if (force) {
-            container.scrollTo({
-              top: targetTop,
-              behavior: 'smooth'
-            });
-          } else {
-            // Direct assignment is significantly smoother during rapid streaming
-            container.scrollTop = targetTop;
-          }
+             const targetTop = container.scrollHeight;
+             // Check if we are already at bottom to avoid unnecessary setting (which might trigger scroll events)
+             if (Math.abs(container.scrollTop - (targetTop - container.clientHeight)) < 2) {
+                 return;
+             }
+             
+             if (force) {
+               container.scrollTo({
+                 top: targetTop,
+                 behavior: 'smooth'
+               });
+             } else {
+               // Direct assignment is significantly smoother during rapid streaming
+               container.scrollTop = targetTop;
+             }
         });
       });
     },
@@ -1441,35 +1485,35 @@ Long-term Memory: ${memory}
       console.log('Decision needed:', content);
       try {
         if (!content) {
-          console.error('Empty decision content');
-          return;
+             console.error('Empty decision content');
+             return;
         }
         const data = typeof content === 'string' ? JSON.parse(content) : content;
-
+        
         if (data && data.args && data.args.command) {
-          this.pendingCommand = data.args.command;
-          this.isConfirmDialogOpen = true;
+            this.pendingCommand = data.args.command;
+            this.isConfirmDialogOpen = true;
         } else if (data && data.type === 'confirmation') {
-          // Fallback for missing command but valid type
-          console.warn('Decision content missing command:', data);
-          this.pendingCommand = data.args && data.args.command ? data.args.command : "(No command found in arguments)";
-          this.isConfirmDialogOpen = true;
+             // Fallback for missing command but valid type
+             console.warn('Decision content missing command:', data);
+             this.pendingCommand = data.args && data.args.command ? data.args.command : "(No command found in arguments)";
+             this.isConfirmDialogOpen = true;
         } else {
-          console.warn('Invalid decision data structure:', data);
+             console.warn('Invalid decision data structure:', data);
         }
       } catch (e) {
-        console.error('Error parsing decision content:', e);
+          console.error('Error parsing decision content:', e);
       }
     },
     async confirmCommand() {
       this.isConfirmDialogOpen = false;
       const cmd = this.pendingCommand;
       this.pendingCommand = '';
-
+      
       const aiMsgIndex = this.messages.length - 1;
       this.isSending = true;
       this.abortController = new AbortController();
-
+      
       // Use existing messages as context
       const context = this.messages;
 
@@ -1482,35 +1526,35 @@ Long-term Memory: ${memory}
           onContent: (chunk) => {
             const currentMsg = this.messages[aiMsgIndex];
             if (currentMsg) {
-              currentMsg.content += chunk;
-              this.scrollToBottom();
+                currentMsg.content += chunk;
+                this.scrollToBottom();
             }
           },
           onThinking: (chunk) => {
-            const currentMsg = this.messages[aiMsgIndex];
-            if (currentMsg) {
-              if (!currentMsg.thinking) currentMsg.thinking = '';
-              currentMsg.thinking += chunk;
-              currentMsg.isThinking = true;
-              this.scrollToBottom();
-            }
+             const currentMsg = this.messages[aiMsgIndex];
+             if (currentMsg) {
+                if (!currentMsg.thinking) currentMsg.thinking = '';
+                currentMsg.thinking += chunk;
+                currentMsg.isThinking = true;
+                this.scrollToBottom();
+             }
           },
           onDecision: this.handleDecision,
           onDone: () => {
-            this.isSending = false;
-            this.abortController = null;
-            mutations.finalizeLastMessage();
+             this.isSending = false;
+             this.abortController = null;
+             mutations.finalizeLastMessage();
           },
           onError: (err) => {
-            console.error(err);
-            this.isSending = false;
-            this.abortController = null;
+             console.error(err);
+             this.isSending = false;
+             this.abortController = null;
           },
           signal: this.abortController.signal
         }, [], { confirmed_command: cmd });
       } catch (err) {
-        console.error('Confirm Command Error:', err);
-        this.isSending = false;
+          console.error('Confirm Command Error:', err);
+          this.isSending = false;
       }
     },
     cancelCommand() {
@@ -1525,15 +1569,15 @@ Long-term Memory: ${memory}
     },
     // Backup Reminder Methods
     checkBackupStatus() {
-      const lastTime = store.settings.lastBackupTime;
+      const lastTime = localStorage.getItem("lastBackupTime");
       const days = store.settings.backupReminderDays || 1;
-
+      
       if (!lastTime) {
-        if (store.history.length > 0 || store.sessions.length > 0) {
-          this.showBackupReminder = true;
-          this.backupReminderText = '您尚未备份过数据，点击此处导出备份。';
-        }
-        return;
+         if (store.history.length > 0 || store.sessions.length > 0) {
+             this.showBackupReminder = true;
+             this.backupReminderText = '您尚未备份过数据，点击此处导出备份。';
+         }
+         return;
       }
 
       const now = Date.now();
@@ -1900,8 +1944,8 @@ Long-term Memory: ${memory}
 
 /* Main Chat Area - Clean & Spacious */
 .chat-main {
-  overflow-x: auto;
-  width: 100%;
+      overflow-x: auto;
+    width: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1961,7 +2005,7 @@ Long-term Memory: ${memory}
 @media (max-width: 1024px) {
   .messages-container {
     padding: 2rem 5%;
-    padding-bottom: 140px !important;
+        padding-bottom: 140px !important;
   }
 }
 
@@ -2009,7 +2053,7 @@ Long-term Memory: ${memory}
   align-items: flex-end;
 }
 .message-row.assistant .message-wrapper {
-  width: 85%;
+   width: 85%;
 }
 
 
@@ -2231,10 +2275,10 @@ Long-term Memory: ${memory}
 }
 
 [data-theme="dark"] @keyframes border-pulse {
-                      0% { border-left-color: rgba(255, 255, 255, 0.15); }
-                      50% { border-left-color: rgba(255, 255, 255, 0.6); }
-                      100% { border-left-color: rgba(255, 255, 255, 0.15); }
-                    }
+  0% { border-left-color: rgba(255, 255, 255, 0.15); }
+  50% { border-left-color: rgba(255, 255, 255, 0.6); }
+  100% { border-left-color: rgba(255, 255, 255, 0.15); }
+}
 
 .thinking-block summary {
   padding: 0.4rem 0.5rem;
@@ -2514,9 +2558,8 @@ textarea {
 
 /* Markdown Cleanups */
 .markdown-body {
-  word-break: break-all;
+      word-break: break-all;
   font-family: inherit !important;
-  font-size: 0.95rem !important;
   line-height: 1.6 !important;
   background-color: transparent !important;
   color: inherit !important;
@@ -3067,10 +3110,10 @@ textarea {
   width: 100%;
   height: 100%;
   background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 100%
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
   );
   animation: shimmer 1.5s infinite;
   transform: skewX(-20deg);
@@ -3078,10 +3121,10 @@ textarea {
 
 [data-theme="dark"] .shimmer {
   background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      transparent 100%
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
   );
 }
 
@@ -3271,7 +3314,11 @@ textarea {
 @media (max-width: 768px) {
   .mobile-only { display: block; }
   .close-sidebar-btn { display: flex; }
-
+  
+  .delete-session-btn {
+    opacity: 0.8;
+  }
+  
   .sidebar {
     position: fixed;
     top: 0;
@@ -3284,12 +3331,12 @@ textarea {
     opacity: 1;
     overflow: visible;
   }
-
+  
   .sidebar.sidebar-open {
     transform: translateX(0);
     width: 80%;
   }
-
+  
   .sidebar-overlay {
     display: block;
     position: fixed;
@@ -3301,31 +3348,31 @@ textarea {
     z-index: 90;
     backdrop-filter: blur(4px);
   }
-
+  
   .chat-header {
     background: rgba(255, 255, 255, 0.9);
   }
-
+  
   .messages-container {
     padding: 1rem;
     padding-bottom: 120px;
   }
-
+  
   .input-area {
     width: 95%;
     bottom: 1rem;
   }
-
+  
   .message-content {
     max-width: 95%;
   }
 
   /* Optimize toolbar on mobile */
-  .tool-tab span,
+  .tool-tab span, 
   .active-role-chip .role-name {
     display: none;
   }
-
+  
   .tool-tab, .active-role-chip {
     padding: 6px 8px;
     flex-shrink: 0;
@@ -3338,7 +3385,7 @@ textarea {
     -ms-overflow-style: none;
     padding-bottom: 2px;
   }
-
+  
   .left-tools::-webkit-scrollbar {
     display: none;
   }
