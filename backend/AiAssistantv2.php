@@ -26,6 +26,8 @@ class AiAssistant
             $this->proxyMarkitdown();
         } elseif ($action === 'webscrape') {
             $this->proxyWebscrape();
+        } elseif ($action === 'speed_test') {
+            $this->speedTest();
         } else {
             $this->chat();
         }
@@ -39,8 +41,8 @@ class AiAssistant
         // 0. CORS Headers
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, X-Token, Authorization');
-
+        header('Access-Control-Allow-Headers: *');
+        
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
             header('HTTP/1.1 200 OK');
             exit();
@@ -52,7 +54,7 @@ class AiAssistant
         // 1. Parse Input
         $rawInput = file_get_contents('php://input');
         $input = json_decode($rawInput, true);
-
+        
         // Support GET params for quick browser testing too
         if (!$input) {
             $input = $_GET;
@@ -65,8 +67,8 @@ class AiAssistant
         header('Content-Type: text/event-stream');
         header('Cache-Control: no-cache');
         header('Connection: keep-alive');
-        header('X-Accel-Buffering: no');
-
+        header('X-Accel-Buffering: no'); 
+        
         if (ob_get_level() > 0) {
             ob_end_clean();
         }
@@ -79,7 +81,7 @@ class AiAssistant
         // Try local runtime dir first, then system temp
         $localRuntime = __DIR__ . '/runtime';
         $runtimePath = $localRuntime;
-
+        
         if (!is_dir($localRuntime)) {
             // Attempt to create local runtime
             if (!@mkdir($localRuntime, 0777, true)) {
@@ -98,33 +100,33 @@ class AiAssistant
             // For now, let's just assume we want to sync the whole /app folder or specific files if we knew them.
             // But user asked to add copyFileFromContainer.
             // Let's implement a mechanism to detect newly created files in /app.
-
+            
             // 1. Get list of files before
-            // $beforeFiles = $docker->execCommandAndReturn("ls -1 /app");
+            // $beforeFiles = $docker->execCommandAndReturn("ls -1 /app"); 
             // (We need a helper for non-streaming output first, but let's keep it simple as requested)
 
             $docker->execCommandStream($chatId, $command, function($line) {
                 $this->sendSseEvent('text', $line);
             });
-
+            
             // Stop container after debug execution
             $docker->stopContainer($chatId);
-
+            
             // 2. After execution, try to copy relevant files
             // For this debug mode, we'll try to copy everything in /app that isn't a hidden file or node_modules
             // Actually, copying everything might be too much.
             // Let's look for files mentioned in the command? Or just copy specific common types?
             // Or maybe just copy the whole /app folder to a download area?
-
+            
             // Let's implement a "sync workspace" approach.
             $downloadsDir = __DIR__ . '/downloads/' . $chatId;
             if (!is_dir($downloadsDir)) {
                 @mkdir($downloadsDir, 0777, true);
             }
-
+            
             // Copy /app from container to host downloads
             $docker->copyFileFromContainer($chatId, "/app/.", $downloadsDir);
-
+            
             // List the files we just copied to give user links
             $files = scandir($downloadsDir);
             $links = [];
@@ -133,16 +135,16 @@ class AiAssistant
             $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
             $scriptDir = str_replace('\\', '/', $scriptDir);
             $scriptDir = rtrim($scriptDir, '/');
-
+            
             foreach ($files as $f) {
                 if ($f === '.' || $f === '..' || $f === 'node_modules') continue;
                 // Ignore hidden files
                 if (strpos($f, '.') === 0) continue;
-
+                
                 $url = "$protocol://$host$scriptDir/downloads/$chatId/$f";
                 $links[] = "[$f]($url)";
             }
-
+            
             if (!empty($links)) {
                 $this->sendSseEvent('text', "\n\n📂 **Workspace Files:**\n" . implode(" | ", $links) . "\n");
             }
@@ -165,8 +167,8 @@ class AiAssistant
         // 0. CORS Headers
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, X-Token, Authorization');
-
+        header('Access-Control-Allow-Headers: *');
+        
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
             header('HTTP/1.1 200 OK');
             exit();
@@ -182,7 +184,7 @@ class AiAssistant
         $memory = isset($input['memory']) ? $input['memory'] : [];
         $history = isset($input['history']) ? $input['history'] : [];
         $locationHost = isset($input['location_host']) ? $input['location_host'] : '';
-
+        
         // AI Config
         $endpoint = isset($input['endpoint']) ? $input['endpoint'] : '';
         $apiKey = isset($input['api_key']) ? $input['api_key'] : '';
@@ -190,8 +192,8 @@ class AiAssistant
         $chatId = isset($input['chat_id']) ? $input['chat_id'] : 'default_session';
 
         // Apply default interface transformation
-        $this->applyDefaultConfig($endpoint, $apiKey, $model, false, $locationHost);
-        $this->applyFastConfig($endpoint, $apiKey, $model, $locationHost);
+        applyDefaultConfig($endpoint, $apiKey, $model, false, $locationHost);
+        applyFastConfig($endpoint, $apiKey, $model, $locationHost);
 
         if (!$endpoint || !$apiKey || !$model) {
             header('Content-Type: application/json');
@@ -203,7 +205,7 @@ class AiAssistant
         $soulStr = json_encode($soul, JSON_UNESCAPED_UNICODE);
         $userStr = json_encode($user, JSON_UNESCAPED_UNICODE);
         $memoryStr = json_encode($memory, JSON_UNESCAPED_UNICODE);
-
+        
         // Take only last 20 messages to avoid context overflow
         $recentHistory = array_slice($history, -20);
         $historyText = "";
@@ -244,13 +246,13 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         ];
 
         $response = $this->callLLM($endpoint, $apiKey, $model, $messages);
-
+        
         // 4. Return Result
         header('Content-Type: application/json');
-
+        
         // Try to parse JSON from response (handle potential markdown blocks)
         $cleanResponse = $this->extractJson($response);
-
+        
         if ($cleanResponse) {
             $responseData = json_decode($cleanResponse, true);
             if (is_array($responseData)) {
@@ -281,7 +283,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         // Extract prompt from messages since getTextResponse expects a prompt string and history
         $prompt = '';
         $history = [];
-
+        
         if (!empty($messages)) {
             $lastMsg = array_pop($messages);
             if ($lastMsg['role'] === 'user') {
@@ -290,7 +292,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
             } else {
                 // Fallback if last message is not user
                 $messages[] = $lastMsg;
-                // Just use empty prompt and let history carry it?
+                // Just use empty prompt and let history carry it? 
                 // getTextResponse appends prompt to history.
                 // If prompt is empty, it might be weird.
                 // Let's assume the caller structured it correctly.
@@ -310,7 +312,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
     private function extractJson($text)
     {
         if (!$text) return null;
-
+        
         // Remove markdown code blocks if present
         if (preg_match('/```json\s*(.*?)\s*```/s', $text, $matches)) {
             return $matches[1];
@@ -318,7 +320,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         if (preg_match('/```\s*(.*?)\s*```/s', $text, $matches)) {
             return $matches[1];
         }
-
+        
         // Basic validation
         $decoded = json_decode($text, true);
         return $decoded ? $text : null;
@@ -342,11 +344,80 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         $this->forwardRequest(WEBSCRAPE_API_URL);
     }
 
+    /**
+     * Test connection speed to a URL
+     */
+    public function speedTest()
+    {
+        $this->corsHeaders();
+
+        // Get URL from GET or POST
+        $url = isset($_GET['url']) ? $_GET['url'] : '';
+        if (empty($url)) {
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true);
+            if (isset($input['url'])) {
+                $url = $input['url'];
+            }
+        }
+
+        if (empty($url)) {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'error', 'error' => 'Missing URL parameter']);
+            exit;
+        }
+
+        // Add protocol if missing
+        if (strpos($url, 'http') !== 0) {
+            $url = 'https://' . $url;
+        }
+
+   
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_NOBODY, true); // We only care about connection info
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'AiAssistant/2.0 SpeedTest');
+
+        $startTime = microtime(true);
+        curl_exec($ch);
+        $endTime = microtime(true);
+        
+        $info = curl_getinfo($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        header('Content-Type: application/json');
+        
+        if ($error) {
+            echo json_encode([
+                'status' => 'error',
+                'url' => $url,
+                'error' => $error
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'success',
+                'url' => $url,
+                'http_code' => $info['http_code'],
+                'total_time' => $info['total_time'], // Seconds
+                'namelookup_time' => $info['namelookup_time'],
+                'connect_time' => $info['connect_time'],
+                'time_taken_ms' => round($info['total_time'] * 1000, 2)
+            ]);
+        }
+        exit;
+    }
+
     private function corsHeaders()
     {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE');
-        header('Access-Control-Allow-Headers: Content-Type, X-Token, Authorization');
+        header('Access-Control-Allow-Headers: *');
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
             header('HTTP/1.1 200 OK');
             exit();
@@ -357,7 +428,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
     {
         $method = $_SERVER['REQUEST_METHOD'];
         $headers = [];
-
+        
         $requestHeaders = function_exists('getallheaders') ? getallheaders() : [];
         if (empty($requestHeaders)) {
             foreach ($_SERVER as $name => $value) {
@@ -381,7 +452,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         }
 
         $ch = curl_init();
-
+        
         // Handle query string
         $queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
         $queryString = preg_replace('/(&?)action=[^&]*/', '', $queryString);
@@ -397,7 +468,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
+        
         if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
             $contentType = isset($_SERVER["CONTENT_TYPE"]) ? $_SERVER["CONTENT_TYPE"] : '';
             if (strpos($contentType, 'multipart/form-data') !== false) {
@@ -423,7 +494,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         }
 
         $response = curl_exec($ch);
-
+        
         if (curl_errno($ch)) {
             http_response_code(502);
             echo json_encode(['error' => 'Proxy error: ' . curl_error($ch)]);
@@ -438,7 +509,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         curl_close($ch);
 
         http_response_code($httpCode);
-
+        
         $headerArray = explode("\r\n", $responseHeaders);
         foreach ($headerArray as $header) {
             if (!empty($header) && strpos(strtolower($header), 'transfer-encoding') === false) {
@@ -458,8 +529,8 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         // 0. CORS Headers
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, X-Token, Authorization');
-
+        header('Access-Control-Allow-Headers: *');
+        
         // Handle preflight OPTIONS request
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
             header('HTTP/1.1 200 OK');
@@ -468,11 +539,16 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
 
         // Disable time limit for long streaming
         set_time_limit(0);
+        
+        // 1. Receive Parameters
+        // Since we are using fetch with JSON body, use php://input
+        $rawInput = file_get_contents('php://input');
+        $input = json_decode($rawInput, true);
 
-        // 1. Token Authentication
-        // Get header using native PHP
-        $token = isset($_SERVER['HTTP_X_TOKEN']) ? $_SERVER['HTTP_X_TOKEN'] : '';
-
+        // 2. Token Authentication
+        // Get token from POST payload
+        $token = isset($input['token']) ? $input['token'] : '';
+        
         // In a real scenario, validate $token against your user/session database
         if (!$token) {
             // For demo purposes, we might allow it or return 401
@@ -480,11 +556,6 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
             // echo json_encode(['error' => 'Token required']);
             // exit;
         }
-
-        // 2. Receive Parameters
-        // Since we are using fetch with JSON body, use php://input
-        $rawInput = file_get_contents('php://input');
-        $input = json_decode($rawInput, true);
 
         $prompt = isset($input['prompt']) ? $input['prompt'] : '';
         $history = isset($input['history']) ? $input['history'] : [];
@@ -494,7 +565,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         $imageUrls = isset($input['image_urls']) ? $input['image_urls'] : [];
         $locationHost = isset($input['location_host']) ? $input['location_host'] : '';
         $disableClaudeTool = isset($input['disable_claude_tool']) ? (bool)$input['disable_claude_tool'] : false;
-
+        
         // Proxy Settings
         $endpoint = isset($input['endpoint']) ? $input['endpoint'] : '';
         $apiKey = isset($input['api_key']) ? $input['api_key'] : '';
@@ -503,7 +574,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         $provider = isset($input['provider']) ? $input['provider'] : '';
         $chatId = isset($input['chat_id']) ? $input['chat_id'] : 'default_session';
         $confirmedCommand = isset($input['confirmed_command']) ? $input['confirmed_command'] : '';
-
+        
         // Specialized models from frontend
         $textModel = isset($input['text_model']) ? $input['text_model'] : null;
         $t2iModel = isset($input['t2i_model']) ? $input['t2i_model'] : null;
@@ -521,15 +592,15 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
         $confirmedOutput = "";
 
         // Apply default interface transformation
-        $this->applyDefaultConfig($endpoint, $apiKey, $model, $thinkingMode, $locationHost);
+        applyDefaultConfig($endpoint, $apiKey, $model, $thinkingMode, $locationHost);
 
         // 3. Set SSE Headers
         header('Content-Type: text/event-stream');
         header('Cache-Control: no-cache');
         header('Connection: keep-alive');
         // Prevent buffering in Nginx/Apache
-        header('X-Accel-Buffering: no');
-
+        header('X-Accel-Buffering: no'); 
+        
         // Ensure immediate output (referencing user's provided code)
         if (ob_get_level() > 0) {
             ob_end_clean();
@@ -543,7 +614,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
              if (stripos($confirmedCommand, 'claude') !== 0) {
                  $confirmedCommand = 'claude "' . str_replace('"', '\"', $confirmedCommand) . '"';
              }
-
+             
              $this->sendSseEvent('think', "\n🚀 **Executing Confirmed Command:** `$confirmedCommand`\n");
              // Determine runtime path
              $localRuntime = __DIR__ . '/runtime';
@@ -558,17 +629,17 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
 
              $docker = new DockerManager($runtimePath);
              $outputBuffer = "";
-
+             
              try {
                  $docker->execCommandStream($chatId, $confirmedCommand, function($line) use (&$outputBuffer) {
                      $outputBuffer .= $line;
-                     $this->sendSseEvent('think', $line);
+                     $this->sendSseEvent('think', $line); 
                  });
                  $confirmedOutput = "Command `$confirmedCommand` executed successfully. Output (last 2000 chars):\n" . substr($outputBuffer, -2000);
-
+                 
                  // Stop container after task execution
                  $docker->stopContainer($chatId);
-
+                 
              } catch (Exception $e) {
                  $confirmedOutput = "Error executing command: " . $e->getMessage();
                  $this->sendSseEvent('text', "\n❌ **Error:** " . $e->getMessage() . "\n");
@@ -588,9 +659,9 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
                   $this->sendSseEvent('text', "您还没有配置绘画模型\n");
                    exit();
             }
-
+            
              $this->performImageGeneration($prompt, $imageUrls, $locationHost, $t2iModel, $i2iModel);
-
+            
         }
 
         // 4. Handle Web Search (if enabled)
@@ -602,7 +673,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
             if (!empty($history) && $endpoint && $apiKey) {
                  $this->sendSseEvent('think', "🤔 **正在思考搜索关键词...**\n");
                  $optimizedPrompt = $this->optimizeSearchQuery($prompt, $history, $endpoint, $apiKey, $model, $locationHost);
-
+                 
                  // If optimization returned something different and valid
                  if ($optimizedPrompt && $optimizedPrompt !== $prompt) {
                      $this->sendSseEvent('think', "✨ **优化后的搜索关键词：** \"$optimizedPrompt\"\n\n");
@@ -618,12 +689,12 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
 
         // 5. Proxy to AI Endpoint (if configured)
         if ($endpoint && $apiKey && $model) {
-            $this->proxyToAi($endpoint, $apiKey,$originApiKey, $model, $history, $prompt, $imageUrls, $imageGeneration, $chatId, $confirmedOutput, $disableClaudeTool, $provider, $planMode);
+            $this->proxyToAi($endpoint, $apiKey,$originApiKey, $locationHost,$model, $history, $prompt, $imageUrls, $imageGeneration, $chatId, $confirmedOutput, $disableClaudeTool, $provider, $planMode);
             exit();
         }
 
         // 6. Fallback: Simulate Interaction (Mocking the stream)
-
+        
         // A. Simulate "Deep Thinking" process (if enabled)
         if ($thinkingMode) {
             $thoughts = [
@@ -637,16 +708,16 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
             foreach ($thoughts as $step) {
                 $this->sendSseEvent('think', "• " . $step . "\n");
                 // Simulate processing time
-                usleep(rand(300000, 800000));
+                usleep(rand(300000, 800000)); 
             }
-
+            
             // End thinking
             $this->sendSseEvent('think', "\nThinking complete.\n");
         }
 
         // B. Simulate "Content Generation" (Typewriter effect)
         // In a real app, you would use curl with CURLOPT_WRITEFUNCTION to stream chunks from OpenAI/Anthropic
-
+        
         $responseTemplate = "Here is a simulated response for: \"{$prompt}\".\n\n" .
                             "This project is now a **Standalone PHP Script**.\n" .
                             "It no longer depends on **ThinkPHP 5**.\n" .
@@ -654,7 +725,7 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
 
         // Split into chunks to simulate network stream
         $chars = preg_split('//u', $responseTemplate, -1, PREG_SPLIT_NO_EMPTY);
-
+        
         foreach ($chars as $char) {
             $this->sendSseEvent('text', $char);
             usleep(30000); // 30ms per char
@@ -669,14 +740,14 @@ Return ONLY a valid JSON object with the following structure (no markdown, no ex
     /**
      * Proxy request to OpenAI-compatible endpoint with Tool Support
      */
-    private function proxyToAi($endpoint, $apiKey,$originApiKey, $model, $history, $prompt, $imageUrls = [], $imageGeneration = false, $chatId = 'default_session', $confirmedOutput = '', $disableClaudeTool = false, $provider = '', $planMode = false)
+    private function proxyToAi($endpoint, $apiKey,$originApiKey,$locationHost, $model, $history, $prompt, $imageUrls = [], $imageGeneration = false, $chatId = 'default_session', $confirmedOutput = '', $disableClaudeTool = false, $provider = '', $planMode = false)
     {
         // Construct standard OpenAI payload
         $messages = [];
-
+        
         $currentTime = date('Y-m-d H:i:s');
         $planInstructions = "";
-
+        
         if ($planMode) {
              $planInstructions = "\n\n[Plan Mode Activated]
 You are currently in Plan Mode. Your goal is to deeply understand the user's request before providing a solution.
@@ -688,10 +759,10 @@ Protocol:
         }
 
         // Add a strong system instruction to guide tool usage
-        if (isClaudeToolAllowed($originApiKey)) {
+        if (isClaudeToolAllowed($originApiKey,$locationHost)) {
             $messages[] = [
                 'role' => 'system',
-                'content' => "You are an advanced AI assistant with access to a \"Claude Code\" agent running in a container.
+                'content' => "You are an advanced AI assistant with access to a \"Claude Code\" agent running in a container. 
 Current Date and Time: $currentTime
 Your primary way of interacting with the world (searching, coding, file operations) is by delegating tasks to this agent using the `claude_code` tool.
 When using `claude_code`, the command MUST look like: claude \"your natural language instruction here\".
@@ -706,7 +777,7 @@ Always prefer using the `claude` CLI agent for complex tasks." . $planInstructio
 Current Date and Time: $currentTime
 You are capable of answering questions, writing code, and assisting with various tasks.
 Please provide accurate, safe, and helpful responses." . $planInstructions
-            ];
+            ]; 
         }
 
         foreach ($history as $msg) {
@@ -715,12 +786,12 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
             if (!in_array($role, ['system', 'user', 'assistant', 'tool'])) {
                 $role = 'user';
             }
-
+            
             $content = isset($msg['content']) ? $msg['content'] : '';
-
+            
             // Handle existing tool calls in history if any (simple reconstruction)
             // For now, we assume history is simple text.
-
+            
             $messages[] = [
                 'role' => $role,
                 'content' => $content
@@ -734,7 +805,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                 'content' => "Command executed successfully. Output:\n" . $confirmedOutput
             ];
         }
-
+        
         // Add current user message
         if (!empty($imageUrls)) {
             $content = [['type' => 'text', 'text' => $prompt]];
@@ -788,7 +859,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
             ]
         ];
 
-        if (!$disableClaudeTool && isClaudeToolAllowed($originApiKey)) {
+        if (!$disableClaudeTool && isClaudeToolAllowed($originApiKey,$locationHost)) {
              $tools[] = [
                 'type' => 'function',
                 'function' => [
@@ -814,7 +885,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
 
         while ($currentTurn < $maxTurns) {
             $currentTurn++;
-
+            
             $payload = ProviderTransformer::transformPayload($provider, $model, $messages, $tools, ['stream' => true]);
 
             // Transform URL if needed (e.g. for Gemini)
@@ -834,13 +905,13 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
             // State variables for the stream
             $buffer = '';
             $assistantContent = '';
-            $toolCallsBuffer = [];
+            $toolCallsBuffer = []; 
             $isToolCall = false;
 
             // Use a closure to capture state
             $writeFunction = function($ch, $chunk) use (&$buffer, &$assistantContent, &$toolCallsBuffer, &$isToolCall, $provider) {
                 $buffer .= $chunk;
-
+                
                 // Check for API errors in the chunk
                 if (strpos($chunk, '"error":') !== false) {
                     $errorData = json_decode($chunk, true);
@@ -853,11 +924,11 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                 $lines = preg_split("/\r\n|\n|\r/", $buffer);
                 // The last element is potentially incomplete, keep it in buffer
                 $buffer = array_pop($lines);
-
+                
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (empty($line)) continue;
-
+                    
                     $parsed = ProviderTransformer::parseStreamChunk($provider, $line);
                     if (!$parsed) continue;
                     if (isset($parsed['done']) && $parsed['done']) continue;
@@ -888,13 +959,13 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                             }
                         }
                     }
-
+                    
                     // 2. Handle Content
                     if (!empty($parsed['content'])) {
                         $assistantContent .= $parsed['content'];
                         $this->sendSseEvent('text', $parsed['content']);
                     }
-
+                    
                     // 3. Handle Reasoning
                     if (!empty($parsed['think'])) {
                         $this->sendSseEvent('think', $parsed['think']);
@@ -906,22 +977,22 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
             curl_setopt($ch, CURLOPT_WRITEFUNCTION, $writeFunction);
 
             curl_exec($ch);
-
+            
             if (curl_errno($ch)) {
                 $error = curl_error($ch);
                 $this->sendSseEvent('text', "\n[Proxy Error: $error]");
             }
-
+            
             curl_close($ch);
 
             // Post-processing
             if ($isToolCall && !empty($toolCallsBuffer)) {
                 // We have tool calls. Execute them.
-
+                
                 // First, append the assistant's "call" to history
                 // Reconstruct the tool calls object for history
                 $toolCallsArray = array_values($toolCallsBuffer);
-
+                
                 $assistantMsg = [
                     'role' => 'assistant',
                     'content' => $assistantContent ? $assistantContent : null,
@@ -934,41 +1005,41 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                     $fnArgsStr = $tc['function']['arguments'];
                     $fnArgs = json_decode($fnArgsStr, true);
                     $toolCallId = $tc['id'];
-
+                    
                     // DEBUG: Log tool call
                     $this->sendSseEvent('think', "\n[System] Tool Call: **$fnName**\n");
-
+                    
                     if ($fnName === 'generate_file') {
                         // Check if we just generated this file to prevent loops
                         if ($currentTurn > 1) {
                             // If we are in a subsequent turn and the model calls generate_file again with same args, stop.
-                            // But here we just proceed, assuming model has reason.
+                            // But here we just proceed, assuming model has reason. 
                             // However, we should NOT send the SSE text again if it's redundant.
                             // Actually, the loop happens because we feed the tool output back to the model,
                             // and the model decides to call it again? Or the model thinks it failed?
-
+                            
                             // Let's add a "System Note" to the tool output to tell the model to STOP.
                             $output = "File generated successfully. URL: $url. STOP calling this tool now. Tell the user it is done.";
                         }
-
+                        
                         $this->sendSseEvent('think', "\nCreating file: " . $fnArgs['filename'] . "...\n");
                         try {
                             $url = $this->generateFile($fnArgs['filename'], $fnArgs['content']);
                             $output = "File generated successfully. URL: $url";
-
+                            
                             // Explicitly send the download link to frontend
                             // Only send if this is the first time we see this file in this request context?
                             // For simplicity, we send it. The issue is likely the model calling it multiple times.
                             $this->sendSseEvent('text', "\n\n✅ **文件已生成**：[" . $fnArgs['filename'] . "]($url)\n\n");
-
+                            
                             // CRITICAL: Instruct the model to stop calling the tool
                             $output .= ". The file has been created and the link has been shown to the user. Do NOT call generate_file again. You must now briefly summarize the file content to the user in the chat and then stop. Do NOT output repetitive text like 'Done' or 'Go'.";
-
+                            
                         } catch (Exception $e) {
                             $output = "Error generating file: " . $e->getMessage();
                             $this->sendSseEvent('text', "\n\n❌ **文件生成失败**：" . $e->getMessage() . "\n\n");
                         }
-
+                        
                         // Append tool result to history
                         $messages[] = [
                             'role' => 'tool',
@@ -978,65 +1049,65 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                         ];
                     } elseif ($fnName === 'claude_code') {
                          $command = isset($fnArgs['command']) ? $fnArgs['command'] : '';
-
+                         
                          // Ensure command starts with claude
                          $command = trim($command);
                          if (stripos($command, 'claude') !== 0) {
                              $command = 'claude "' . str_replace('"', '\"', $command) . '"';
                          }
-
+                         
                          // CRITICAL: Update fnArgs so the frontend receives the full command with claude prefix
                          $fnArgs['command'] = $command;
-
+                         
                          // DEBUG: Check confirmedOutput status
                          // $this->sendSseEvent('think', "\n[DEBUG] claude_code called. confirmedOutput length: " . strlen($confirmedOutput) . "\n");
-
+                         
                          // Check if this is a resumed execution (confirmed output is present)
                          if ($confirmedOutput) {
                              // This means we already executed it in step 1, so we just use the output
                              // We should NOT execute it again, but we need to return the output to the message history so the loop continues (or not?)
                              // Actually, if we have confirmed output, we should have already injected it into the prompt history before calling the LLM.
                              // So the LLM *should* know the result.
-
+                             
                              // If the LLM calls the tool AGAIN, it means it wants to run ANOTHER command (or the same one again).
                              // So, technically, if we are here, we should treat it as a NEW request, UNLESS the LLM is just repeating itself blindly.
-
-                             // Let's assume for now that ANY tool call here is a NEW request that needs confirmation,
+                             
+                             // Let's assume for now that ANY tool call here is a NEW request that needs confirmation, 
                              // UNLESS we just injected the result of THIS specific command.
-
+                             
                              // But we don't track "which" command was confirmed in the $confirmedOutput variable, just the output.
                              // Simple heuristic: If confirmedOutput is present, we assume the LLM has seen it.
                              // If it calls tool again, it must be a new command.
-
+                             
                              // Wait, if $confirmedOutput is present, it means we just finished a "turn" where we executed a command.
                              // The LLM was called with that output.
                              // Now the LLM is generating a response.
                              // If that response includes a tool call, it is a NEW tool call.
-
+                             
                              // So, we should NEVER skip confirmation just because $confirmedOutput is not empty.
                              // $confirmedOutput was for the *previous* logical step (which happened milliseconds ago in the backend flow).
-
+                             
                              // Therefore, we should ALWAYS ask for confirmation here.
                              // The only exception is if we had a mechanism to say "this specific tool call ID has been approved".
-
+                             
                              // Let's remove the check for $confirmedOutput here to force confirmation every time the LLM *generates* a tool call.
                          }
-
+                         
                          // Decision Point: Always ask for confirmation for claude_code
-
+                         
                          $this->sendSseEvent('think', "\n⚠️ **Command Execution Paused**\nWaiting for user confirmation to execute: `$command`\n");
-
+                         
                          $this->sendSseEvent('decision', json_encode([
                              'type' => 'confirmation',
                              'args' => $fnArgs,
                              'message' => 'The AI wants to execute a command. Please confirm.'
                          ]));
-
+                         
                          // Stop processing further tools and stream
                          echo "data: [DONE]\n\n";
                          $this->flush();
                          exit();
-
+                         
                      } elseif ($fnName === 'download_container_file') {
                           $containerPath = isset($fnArgs['path']) ? $fnArgs['path'] : '';
                           $filename = basename($containerPath);
@@ -1044,11 +1115,11 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                           if (!is_dir($downloadsDir)) {
                               mkdir($downloadsDir, 0777, true);
                           }
-
+                          
                           // Unique filename
                           $targetFilename = $chatId . '_' . time() . '_' . $filename;
                           $hostPath = $downloadsDir . '/' . $targetFilename;
-
+                          
                           $localRuntime = __DIR__ . '/runtime';
                           $runtimePath = $localRuntime;
                           if (!is_dir($localRuntime)) {
@@ -1058,13 +1129,13 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                           } elseif (!is_writable($localRuntime)) {
                                $runtimePath = sys_get_temp_dir() . '/aihelp_runtime';
                           }
-
+                          
                           $docker = new DockerManager($runtimePath);
-
+                          
                           try {
                               $this->sendSseEvent('think', "\n📦 **Packaging file:** `$containerPath`...\n");
                               $docker->copyFileFromContainer($chatId, $containerPath, $hostPath);
-
+                              
                               // Generate URL
                               $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
                               $host = $_SERVER['HTTP_HOST'];
@@ -1072,20 +1143,20 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                               $scriptDir = str_replace('\\', '/', $scriptDir);
                               $scriptDir = rtrim($scriptDir, '/');
                               $url = "$protocol://$host$scriptDir/downloads/" . $targetFilename;
-
+                              
                               $output = "File downloaded successfully. URL: $url";
                               $this->sendSseEvent('text', "\n\n✅ **File Ready:** [$filename]($url)\n\n");
-
+                              
                               // Stop container after file operation
                               $docker->stopContainer($chatId);
-
+                              
                           } catch (Exception $e) {
                               $output = "Error downloading file: " . $e->getMessage();
                               $this->sendSseEvent('text', "\n❌ **Download Error:** " . $e->getMessage() . "\n");
                               // Ensure stopped on error
                               $docker->stopContainer($chatId);
                           }
-
+                          
                           $messages[] = [
                               'role' => 'tool',
                               'tool_call_id' => $toolCallId,
@@ -1108,7 +1179,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                 break;
             }
         }
-
+        
         echo "data: [DONE]\n\n";
         $this->flush();
     }
@@ -1120,10 +1191,10 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
     {
         // Security check: prevent directory traversal
         $filename = basename($filename);
-
+        
         // Use current directory downloads folder
         $downloadsDir = __DIR__ . '/downloads';
-
+        
         if (!is_dir($downloadsDir)) {
             mkdir($downloadsDir, 0777, true);
         }
@@ -1160,14 +1231,14 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                 }
             }
         }
-
+        
         $path = $downloadsDir . '/' . $filename;
         file_put_contents($path, $content);
-
+        
         // Construct public URL relative to the script execution
         $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
         $host = $_SERVER['HTTP_HOST'];
-
+        
         // Get the directory of the current script from URL perspective
         // script_name usually starts with /
         $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
@@ -1175,7 +1246,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
         $scriptDir = str_replace('\\', '/', $scriptDir);
         // Remove trailing slash if root
         $scriptDir = rtrim($scriptDir, '/');
-
+        
         return "$protocol://$host$scriptDir/downloads/$filename";
     }
 
@@ -1205,7 +1276,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
         $this->sendSseEvent('think', "🌐 **正在联网搜索：** \"$query\"...\n\n");
 
         // LangSearch API Call
-        // Note: Replace with actual endpoint/key if provided by user.
+        // Note: Replace with actual endpoint/key if provided by user. 
         // Based on typical AI search APIs.
         $searchEndpoint = "https://api.langsearch.com/v1/web-search";
         $langSearchApiKey = LANG_SEARCH_API_KEY;
@@ -1246,7 +1317,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                 $url = isset($item['url']) ? $item['url'] : '';
                 $content = isset($item['summary']) ? $item['summary'] : (isset($item['snippet']) ? $item['snippet'] : '');
                 $snippet = isset($item['snippet']) ? $item['snippet'] : (mb_strlen($content) > 100 ? mb_substr($content, 0, 100) . '...' : $content);
-
+                
                 // Construct a structured search item that frontend can style
                 $resultsText .= "<div class='search-item'>\n";
                 $resultsText .= "  <div class='search-item-title'><strong>[$idx] $title</strong> <a href='$url' target='_blank'>[查看来源]</a></div>\n";
@@ -1286,10 +1357,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
 
 
 
-    private function applyDefaultImgConfig(&$endpoint, &$apiKey, &$model)
-    {
 
-    }
 
 
     /**
@@ -1298,11 +1366,14 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
     private function performImageGeneration($prompt, $imageUrls = [], $locationHost = '', $t2iModel = null, $i2iModel = null)
     {
         $this->sendSseEvent('think', "🖌️ **正在请求 AI 绘图模型...**\n");
-
-        // Rcouyi Image Generation (sioyie.com only)
-        if (strpos($locationHost, 'sioyie.com') !== false) {
-             $this->performRcouyiImageGeneration($prompt, $imageUrls, $t2iModel, $i2iModel);
-             return;
+        
+        // Rcouyi Image Generation (migrated to config.php)
+        if (performRcouyiImageGeneration($locationHost, $prompt, $imageUrls, $t2iModel, $i2iModel, function($type, $content) {
+            $this->sendSseEvent($type, $content);
+        }, function() {
+            $this->flush();
+        })) {
+            return;
         }
 
         // Default Configuration (Gemini)
@@ -1336,8 +1407,8 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
             $genApiKey = $selectedModel['api_key'] ?? $genApiKey;
             $modelName = $selectedModel['model'] ?? $modelName;
         }
-
-        $this->applyDefaultImgConfig($genEndpoint,$genApiKey,$modelName);
+        
+        applyDefaultImgConfig($genEndpoint,$genApiKey,$modelName);
 
         // Detect Provider Type
         $isGemini = strpos($genEndpoint, 'generateContent') !== false || strpos($genEndpoint, 'googleapis.com') !== false;
@@ -1362,7 +1433,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
 
         // Send Image Start Signal
         $this->sendSseEvent('image_start', 'generating');
-
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $genEndpoint);
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -1377,19 +1448,25 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
+        
+        //  $this->sendSseEvent('think', $genEndpoint);
+        //  $this->sendSseEvent('think', json_encode($payload));
+        //   $this->sendSseEvent('think', $response);
+        //   echo "data: [DONE]\n\n";
+        // $this->flush();
+         
         if (curl_errno($ch)) {
              $this->sendSseEvent('text', "\n[Network Error: " . curl_error($ch) . "]\n");
              curl_close($ch);
              return;
         }
         curl_close($ch);
-
+        
         if ($httpCode !== 200) {
              $this->sendSseEvent('text', "\n[API Error ($httpCode): $response]\n");
              return;
         }
-
+        
         // Parse Response via Transformer
         $results = ProviderTransformer::parseImageResponse($providerType, $response);
         $foundImage = false;
@@ -1406,34 +1483,36 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
                 $this->sendSseEvent('text', $res['text']);
             }
         }
-
+        
         if (!$foundImage) {
             // Fallback dump
             $this->sendSseEvent('text', "\nResponse received but no image found. Raw response:\n" . substr($response, 0, 500));
         }
-
+        
         echo "data: [DONE]\n\n";
         $this->flush();
     }
 
-    private function saveAndSendImage($base64)
+    private function saveAndSendImage($base64) 
     {
         $filename = 'gen_' . time() . '_' . rand(1000,9999) . '.png';
         $downloadsDir = __DIR__ . '/downloads';
         if (!is_dir($downloadsDir)) mkdir($downloadsDir, 0777, true);
-
+        
         file_put_contents($downloadsDir . '/' . $filename, base64_decode($base64));
-
+        
         $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
         $host = $_SERVER['HTTP_HOST'];
         $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
         $scriptDir = str_replace('\\', '/', $scriptDir);
         $scriptDir = rtrim($scriptDir, '/');
         $fileUrl = "$protocol://$host$scriptDir/downloads/$filename";
-
+        
         $this->sendSseEvent('text', "\n![Generated Image]($fileUrl)\n");
         $this->sendSseEvent('text', "\n[下载图片]($fileUrl)\n");
     }
+
+
 
     /**
      * Get text response from AI (Non-streaming)
@@ -1445,10 +1524,10 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
         if (!$endpoint) $endpoint = '';
         if (!$apiKey) $apiKey = '';
         if (!$model) $model = '';
-
+        
         $skipConfig = isset($extraParams['skip_config']) ? $extraParams['skip_config'] : false;
         if (!$skipConfig) {
-            $this->applyDefaultConfig($endpoint, $apiKey, $model, false, $locationHost);
+            applyDefaultConfig($endpoint, $apiKey, $model, false, $locationHost);
         }
 
         // 2. Prepare Messages
@@ -1488,7 +1567,7 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
             // 7. Parse Response
             return ProviderTransformer::parseResponse($provider, $response);
         }
-
+        
         return null;
     }
 
@@ -1498,11 +1577,11 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
     private function optimizeSearchQuery($prompt, $history, $endpoint, $apiKey, $model, $locationHost = '')
     {
         // Apply fast config for optimization
-        $this->applyFastConfig($endpoint, $apiKey, $model, $locationHost);
+        applyFastConfig($endpoint, $apiKey, $model, $locationHost);
 
         // Take last 6 messages to keep context concise
         $recentHistory = array_slice($history, -6);
-
+        
         $historyText = "";
         foreach ($recentHistory as $msg) {
             $role = isset($msg['role']) ? $msg['role'] : 'unknown';
@@ -1513,8 +1592,8 @@ Please provide accurate, safe, and helpful responses." . $planInstructions
         }
 
         $currentTime = date('Y-m-d H:i:s');
-        $systemPrompt = "You are a search query optimizer.
-The user is chatting with an AI assistant.
+        $systemPrompt = "You are a search query optimizer. 
+The user is chatting with an AI assistant. 
 Current Date and Time: $currentTime
 Your task is to rewrite the user's LATEST message into a standalone, specific search query that includes necessary context from the conversation history.
 
@@ -1541,26 +1620,14 @@ Rewritten Search Query:";
         return $response ? trim($response) : $prompt;
     }
 
-    /**
-     * Apply default interface transformation if applicable
-     */
-    private function applyDefaultConfig(&$endpoint, &$apiKey, &$model, $thinkingMode = false, $locationHost = '')
-    {
-
-    }
 
 
 
 
 
 
-    /**
-     * Apply fast and refined config for specific tasks (Memory, Query Optimization)
-     */
-    private function applyFastConfig(&$endpoint, &$apiKey, &$model, $locationHost = '')
-    {
 
-    }
+
 
     /**
      * Helper to send SSE data
@@ -1571,7 +1638,7 @@ Rewritten Search Query:";
             'type' => $type,
             'content' => $content
         ]);
-
+        
         echo "data: " . $payload . "\n\n";
         $this->flush();
     }
