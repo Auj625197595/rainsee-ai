@@ -1,8 +1,10 @@
 import Vue from 'vue';
 import { memoryDB } from '@/utils/db';
 import { encryptData, decryptData } from '@/utils/crypto';
-import { CHARACTER_STORE_URL } from '@/api/config';
+import { CHARACTER_STORE_URL, BACKUP_API_URL } from '@/api/config';
 import { generateDefaultModels, generateActiveModelIds } from './modelConfig';
+import CryptoJS from 'crypto-js';
+import LZString from 'lz-string';
 
 const STORAGE_KEY = 'rainshome_ai_store';
 
@@ -39,7 +41,7 @@ const defaultRoles = [
 const defaultModels = generateDefaultModels();
 
 const defaultState = {
-  token: '',
+  token: localStorage.getItem('token') || '',
   theme: 'light', // 'light' | 'dark'
   history: [], // Array of { role: 'user'|'assistant', content: '', thinking: '' }
   sessions: [], // Array of { id, title, messages, timestamp, chatId }
@@ -61,7 +63,7 @@ const defaultState = {
     planEnabled: false, // Toggle for "Plan" mode
     imageGenEnabled: false, // Toggle for "Image Generation" mode
     backupReminderDays: 1, // Default reminder interval in days
-    lastBackupTime: null, // Timestamp of last backup
+    fontSize: 16, // Default font size for chat messages
     ...generateActiveModelIds(),
     models: defaultModels
   },
@@ -77,7 +79,7 @@ const loadState = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return {};
     const parsed = JSON.parse(saved);
-
+    
     // Decrypt roleSettings if it's a string
     if (parsed.roleSettings && typeof parsed.roleSettings === 'string') {
       parsed.roleSettings = decryptData(parsed.roleSettings) || defaultState.roleSettings;
@@ -91,10 +93,7 @@ const loadState = () => {
     // Migration: Migrate old settings structure to new models array
     if (parsed.settings) {
       if (parsed.settings.backupReminderDays === undefined) {
-        parsed.settings.backupReminderDays = 1;
-      }
-      if (parsed.settings.lastBackupTime === undefined) {
-        parsed.settings.lastBackupTime = null;
+          parsed.settings.backupReminderDays = 1;
       }
 
       if (!parsed.settings.models) {
@@ -123,7 +122,7 @@ const loadState = () => {
         parsed.settings.models.forEach(m => {
           if (!m.type) m.type = 'text';
         });
-
+        
         // Ensure new active IDs exist
         if (parsed.settings.activeTextModelId === undefined) {
           parsed.settings.activeTextModelId = parsed.settings.activeModelId || 'default';
@@ -136,7 +135,7 @@ const loadState = () => {
         }
       }
     }
-
+    
     return parsed;
   } catch (e) {
     console.error('Failed to load state', e);
@@ -176,24 +175,39 @@ export const store = Vue.observable(initialState);
 export { defaultRoles };
 
 // Persistence helper
+let backupTimeout = null;
 const saveState = () => {
   try {
     // Create a copy of the state to avoid modifying the reactive store directly
-    const stateToSave = {
+    const stateToSave = { 
       ...store,
       settings: { ...store.settings }
     };
-
+    
     // Do not persist volatile states
     delete stateToSave.settings.imageGenEnabled;
     // Do not persist sessions to localStorage (moved to IndexedDB)
     delete stateToSave.sessions;
+    delete stateToSave.timestamp;
+    delete stateToSave.token;
 
     // Encrypt roleSettings
     if (stateToSave.roleSettings) {
       stateToSave.roleSettings = encryptData(stateToSave.roleSettings);
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+
+    // Auto Backup Trigger (Debounced)
+    if (store.token) {
+        if (backupTimeout) clearTimeout(backupTimeout);
+        backupTimeout = setTimeout(() => {
+            if (mutations && mutations.autoUploadCloudBackup) {
+                mutations.autoUploadCloudBackup();
+                //数据有更新，触发下载
+            }
+        }, 5000); // 5 seconds debounce
+    }
+
   } catch (e) {
     console.error('Failed to save state', e);
   }
@@ -221,7 +235,19 @@ export const mutations = {
   // Token Management
   setToken(token) {
     store.token = token;
-    saveState();
+    localStorage.setItem('token', token);
+    this.checkCloudSync(true);
+  },
+
+
+
+  logout() {
+    store.token = '';
+    
+      localStorage.removeItem('cloud_content_md5');
+localStorage.removeItem('cloud_backup_md5');
+      
+    localStorage.removeItem('token');
   },
 
   // Initialize or get persistent ChatID (User Identity)
@@ -263,9 +289,12 @@ export const mutations = {
     store.settings.backupReminderDays = days;
     saveState();
   },
-  updateLastBackupTime() {
-    store.settings.lastBackupTime = Date.now();
+  setFontSize(size) {
+    store.settings.fontSize = size;
     saveState();
+  },
+  updateLastBackupTime() {
+    localStorage.setItem("lastBackupTime",  Date.now());
   },
   setSettings(newSettings) {
     Object.assign(store.settings, newSettings);
@@ -288,13 +317,13 @@ export const mutations = {
     }
   },
   deleteModel(id) {
-
-
+ 
+    
     const idx = store.settings.models.findIndex(m => m.id === id);
     if (idx === -1) return;
-
+    
     store.settings.models.splice(idx, 1);
-
+    
     if (store.settings.activeModelId === id) {
       store.settings.activeModelId = store.settings.models[0]?.id || '';
     }
@@ -311,7 +340,7 @@ export const mutations = {
   },
   setActiveModel(id) {
     store.settings.activeModelId = id;
-
+    
     // Auto-assign to correct type if we know the model's type
     const model = store.settings.models.find(m => m.id === id);
     if (model) {
@@ -319,34 +348,34 @@ export const mutations = {
       else if (model.type === 't2i') store.settings.activeT2iModelId = id;
       else if (model.type === 'i2i') store.settings.activeI2iModelId = id;
     }
-
+    
     saveState();
   },
   setActiveModelByType(id, type) {
     if (type === 'text') store.settings.activeTextModelId = id;
     else if (type === 't2i') store.settings.activeT2iModelId = id;
     else if (type === 'i2i') store.settings.activeI2iModelId = id;
-
+    
     // Also update general active model if it matches the type
     const model = store.settings.models.find(m => m.id === id);
     if (model) {
       store.settings.activeModelId = id;
     }
-
+    
     saveState();
   },
 
   // Role Management
   setActiveRole(roleId) {
     store.roleSettings.activeRoleId = roleId;
-
+    
     // Update History: Remove if exists, then unshift to top
     const history = store.roleSettings.roleHistory || [];
     const newHistory = history.filter(id => id !== roleId);
     newHistory.unshift(roleId);
     // Limit history size (e.g., 20)
     store.roleSettings.roleHistory = newHistory.slice(0, 20);
-
+    
     saveState();
   },
   addCustomRole(role) {
@@ -362,7 +391,7 @@ export const mutations = {
   deleteCustomRole(roleId) {
     if (!store.roleSettings.customRoles) return;
     store.roleSettings.customRoles = store.roleSettings.customRoles.filter(r => r.id !== roleId);
-
+    
     // If deleted role was active, switch to default
     if (store.roleSettings.activeRoleId === roleId) {
       this.setActiveRole('general');
@@ -386,7 +415,7 @@ export const mutations = {
     }
     saveState();
   },
-
+  
   updateCustomRole(role) {
     const idx = store.roleSettings.customRoles.findIndex(r => r.id === role.id);
     if (idx !== -1) {
@@ -456,20 +485,20 @@ export const mutations = {
   async finalizeLastMessage() {
     console.log('[DEBUG-STORE] finalizeLastMessage started');
     try {
-      saveState();
-      console.log('[DEBUG-STORE] State saved to localStorage');
-      // Auto-save session to IndexedDB after each AI response
-      await this.saveCurrentSessionToDB();
-      console.log('[DEBUG-STORE] Session saved to IndexedDB');
+        saveState();
+        console.log('[DEBUG-STORE] State saved to localStorage');
+        // Auto-save session to IndexedDB after each AI response
+        await this.saveCurrentSessionToDB();
+        console.log('[DEBUG-STORE] Session saved to IndexedDB');
     } catch (e) {
-      console.error('[DEBUG-STORE] Error in finalizeLastMessage:', e);
+        console.error('[DEBUG-STORE] Error in finalizeLastMessage:', e);
     }
   },
   async saveCurrentSessionToDB() {
     console.log('[DEBUG-STORE] saveCurrentSessionToDB called');
     if (store.history.length === 0) {
-      console.log('[DEBUG-STORE] History empty, skipping save');
-      return;
+        console.log('[DEBUG-STORE] History empty, skipping save');
+        return;
     }
 
     let session;
@@ -486,7 +515,7 @@ export const mutations = {
       // Create new session if it doesn't exist or currentSessionId is null
       const firstUserMsg = store.history.find(m => m.role === 'user');
       const title = firstUserMsg ? firstUserMsg.content.substring(0, 30) + (firstUserMsg.content.length > 30 ? '...' : '') : 'New Session';
-
+      
       session = {
         id: store.currentSessionId || Date.now(),
         title: title,
@@ -494,7 +523,7 @@ export const mutations = {
         timestamp: Date.now(),
         chatId: store.chatId
       };
-
+      
       if (!store.currentSessionId) {
         store.currentSessionId = session.id;
         store.sessions.unshift(session);
@@ -503,10 +532,10 @@ export const mutations = {
 
     console.log('[DEBUG-STORE] Calling memoryDB.saveSession');
     try {
-      await memoryDB.saveSession(session);
-      console.log('[DEBUG-STORE] memoryDB.saveSession completed');
+        await memoryDB.saveSession(session);
+        console.log('[DEBUG-STORE] memoryDB.saveSession completed');
     } catch (e) {
-      console.error('[DEBUG-STORE] memoryDB.saveSession failed:', e);
+        console.error('[DEBUG-STORE] memoryDB.saveSession failed:', e);
     }
     saveState();
   },
@@ -556,9 +585,9 @@ export const mutations = {
   appendInputContext(text) {
     if (!text) return;
     // Append with newline if not empty
-    store.inputContext = store.inputContext
-        ? store.inputContext + '\n' + text
-        : text;
+    store.inputContext = store.inputContext 
+      ? store.inputContext + '\n' + text 
+      : text;
   },
   clearInputContext() {
     store.inputContext = '';
@@ -570,7 +599,7 @@ export const mutations = {
       const soul = await memoryDB.get('soul');
       const user = await memoryDB.get('user');
       const memory = await memoryDB.get('memory');
-
+      
       if (soul) store.soul = soul;
       if (user) store.user = user;
       if (memory) store.memory = memory;
@@ -592,6 +621,184 @@ export const mutations = {
     }
   },
 
+  // Auto Backup & Sync
+  async autoUploadCloudBackup(force = false) {
+    if (!store.token) return;
+    
+    try {
+      const backupData = await mutations.getFullBackup();
+      
+      // Check content MD5 (ignoring timestamp)
+      const dataForCheck = { ...backupData };
+      delete dataForCheck.timestamp;
+      delete dataForCheck.version;
+      
+      const contentStr = JSON.stringify(dataForCheck);
+      const contentMd5 = CryptoJS.MD5(contentStr).toString();
+      const lastContentMd5 = localStorage.getItem('cloud_content_md5');
+
+      if(!force){
+      if (contentMd5 === lastContentMd5) {
+        // No content changes
+        return;
+      }
+      }
+
+
+      // Compress the data before uploading
+      const backupStr = JSON.stringify(backupData);
+      const compressedStr = LZString.compressToUTF16(backupStr);
+      
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: JSON.stringify({
+          token:store.token,
+           action: 'setCloudBackup',
+           data: compressedStr
+        })
+      };
+
+      const response = await fetch(BACKUP_API_URL+"?action=setCloudBackup", requestOptions);
+      const result = await response.json();
+      
+      if (result.logout || result.code === 401) {
+        this.logout();
+        return;
+      }
+
+      if (result.code === 0 || result.status === 'success' || (result.data && result.data.code === 0)) {
+        console.log('Auto backup success',result.md5);
+        localStorage.setItem('cloud_content_md5', contentMd5);
+        if (result.md5) {
+            localStorage.setItem('cloud_backup_md5', result.md5);
+        }
+        mutations.updateLastBackupTime();
+      } else {
+        console.error('Auto backup failed:', result.message);
+      }
+    } catch (e) {
+      console.error('Auto backup error:', e);
+    }
+  },
+
+  async checkCloudSync(isFirst = false) {
+    if (!store.token) return;
+    
+    try {
+      // Get the last known server MD5 from local storage
+      const lastMd5 = localStorage.getItem('cloud_backup_md5') || '';
+      
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: JSON.stringify({
+           token:store.token,
+           action: 'getCloudBackup',
+           md5: lastMd5
+        })
+      };
+
+      const response = await fetch(BACKUP_API_URL+"?action=getCloudBackup", requestOptions);
+      const result = await response.json();
+      
+      if (result.logout || result.code === 401) {
+        this.logout();
+        return;
+      }
+
+      if (result.code === 404) {
+          // No backup found on server, upload local data
+          console.log('No cloud backup found, uploading local data...');
+          localStorage.removeItem('cloud_backup_md5');
+          localStorage.removeItem('cloud_content_md5');
+          await mutations.autoUploadCloudBackup();
+          return;
+      }
+
+      if (result.code === 0 && result.status === 'success' && result.data) {
+         // Found update
+         console.log('Found cloud update, syncing...');
+         let cloudData = null;
+         
+       
+
+         if (result.data.ret) {
+             const raw = result.data.ret;
+             if (typeof raw === 'string') {
+                 // Try decompressing first
+                 try {
+                     const decompressed = LZString.decompressFromUTF16(raw);
+                     if (decompressed) {
+                         cloudData = JSON.parse(decompressed);
+                     }
+                 } catch (e) {
+                     // Decompression failed or result was not JSON
+                 }
+
+                 // If not successfully decompressed/parsed, try parsing raw string (legacy)
+                 if (!cloudData) {
+                     try {
+                         cloudData = JSON.parse(raw);
+                     } catch (e) {
+                         console.error('Failed to parse cloud data:', e);
+                     }
+                 }
+             } else {
+                 cloudData = raw;
+             }
+         } else if (result.data.store) {
+             cloudData = result.data;
+         }
+  //在这里比对本地的数据和云端的json数据的大小，如果本地大于云端。就弹出提示：检测到云端数据少于本地数据，这是危险行为。请确认 云端覆盖本地/本地覆盖云端。
+         if (cloudData) {
+           const localData = await mutations.getFullBackup();
+           const localSize = JSON.stringify(localData).length;
+           const cloudSize = JSON.stringify(cloudData).length;
+           
+           let shouldRestore = true;
+           if (localSize > cloudSize) {
+             const confirmMsg = "检测到云端数据少于本地数据，这是危险行为。\n\n点击【确定】使用云端覆盖本地\n点击【取消】使用本地覆盖云端";
+             if (!window.confirm(confirmMsg)) {
+                shouldRestore = false;
+                await mutations.autoUploadCloudBackup(true);
+             }
+           }
+           
+           if (shouldRestore) {
+             await mutations.restoreFromBackup(cloudData);
+             
+             // Update local content MD5 to avoid immediate re-upload
+             const dataForCheck = { ...cloudData };
+             delete dataForCheck.timestamp;
+             delete dataForCheck.version;
+             const contentMd5 = CryptoJS.MD5(JSON.stringify(dataForCheck)).toString();
+             localStorage.setItem('cloud_content_md5', contentMd5);
+             
+             if (result.data.md5) {
+                 localStorage.setItem('cloud_backup_md5', result.data.md5);
+             }
+             console.log('Cloud sync complete');
+           }
+         }
+      } else {
+         console.log('Cloud sync: No update needed, checking local changes...');
+       if(isNewSoUpload){
+        
+         await mutations.autoUploadCloudBackup();
+       }
+      }
+    } catch (e) {
+      console.error('Cloud sync error:', e);
+    }
+  },
+
   // Backup & Restore
   async getFullBackup() {
     this.updateLastBackupTime();
@@ -608,11 +815,11 @@ export const mutations = {
     if (!backup || !backup.store || !backup.indexed) {
       throw new Error('Invalid backup format');
     }
-
+    
     // Handle legacy backups: If sessions are missing in indexedDB backup but present in store backup,
     // migrate them to indexedDB import data.
     const indexedData = { ...backup.indexed };
-    if ((!indexedData.sessions || indexedData.sessions.length === 0) &&
+    if ((!indexedData.sessions || indexedData.sessions.length === 0) && 
         backup.store.sessions && backup.store.sessions.length > 0) {
       indexedData.sessions = backup.store.sessions;
     }
@@ -634,7 +841,7 @@ export const mutations = {
 
     // Restore IndexedDB
     await memoryDB.importAll(indexedData);
-
+    
     // Reload memory and sessions from DB to ensure store is in sync
     await mutations.loadMemory();
 

@@ -1,5 +1,5 @@
 import { store, mutations } from '../store';
-import { API_URL } from './config';
+import { API_URL, getChatApiUrl } from './config';
 
 // Assuming the backend is served relative to the frontend or via proxy
 // TP5 Route convention: /module/controller/action
@@ -31,11 +31,6 @@ export async function streamChat(text, context, { onContent, onThinking, onDone,
     'Content-Type': 'application/json',
     'Accept': 'text/event-stream', // Important for SSE
   };
-
-  // Add Token from Store
-  if (store.token) {
-    headers['X-Token'] = store.token; // Or 'Authorization': `Bearer ${store.token}`
-  }
 
   // --- Typewriter Logic ---
   let typingQueue = [];
@@ -121,6 +116,9 @@ export async function streamChat(text, context, { onContent, onThinking, onDone,
             msg.attachments.forEach(att => {
                 if (att.type === 'file') {
                     content += `\n\n[Reference Document Content (${att.name})]:\n${att.content}`;
+                    if (att.url) {
+                        content += `\n\n[Download ${att.name}]: ${att.url}`;
+                    }
                 }
             });
         }
@@ -146,6 +144,9 @@ export async function streamChat(text, context, { onContent, onThinking, onDone,
             m.attachments.forEach(att => {
                 if (att.type === 'file') {
                     content += `\n\n[Reference Document Content (${att.name})]:\n${att.content}`;
+                    if (att.url) {
+                        content += `\n\n[Download ${att.name}]: ${att.url}`;
+                    }
                 }
             });
         }
@@ -199,6 +200,9 @@ export async function streamChat(text, context, { onContent, onThinking, onDone,
       attachments.forEach(att => {
           if (att.type === 'file') {
               finalPrompt += `\n\n[Reference Document Content (${att.name})]:\n${att.content}`;
+              if (att.url) {
+                  finalPrompt += `\n\n[Download ${att.name}]: ${att.url}`;
+              }
           } else if (att.type === 'image') {
               imageUrls.push(att.url);
           }
@@ -233,11 +237,16 @@ export async function streamChat(text, context, { onContent, onThinking, onDone,
       t2i_model: t2iModel ? { provider: t2iModel.provider, endpoint: t2iModel.endpoint, api_key: t2iModel.apiKey, model: t2iModel.model } : null,
       i2i_model: i2iModel ? { provider: i2iModel.provider, endpoint: i2iModel.endpoint, api_key: i2iModel.apiKey, model: i2iModel.model } : null,
       
+      token: store.token,
       timestamp: Date.now(),
       ...extraParams // Merge extra params (like confirmed_command, disable_claude_tool)
     };
 
-    const response = await fetch(`${API_URL}?action=chat`, {
+    // Check if Claude-related: either the model is Claude or it's a confirmed command execution
+    const isClaudeRelated = (textModel && textModel.model && textModel.model.toLowerCase().includes('claude')) || 
+                           (extraParams && extraParams.confirmed_command);
+
+    const response = await fetch(`${getChatApiUrl(textModel.endpoint, isClaudeRelated)}?action=chat`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
@@ -346,15 +355,12 @@ export async function updateMemory(data) {
     'Content-Type': 'application/json'
   };
 
-  if (store.token) {
-    headers['X-Token'] = store.token;
-  }
-
   // Get active model config
   const activeModel = store.settings.models.find(m => m.id === store.settings.activeModelId) || store.settings.models[0];
 
   const payload = {
     ...data,
+    token: store.token,
     location_host: window.location.host,
     endpoint: activeModel.endpoint,
     api_key: activeModel.apiKey,
@@ -362,7 +368,7 @@ export async function updateMemory(data) {
   };
 
   try {
-    const response = await fetch(`${API_URL}?action=update_memory`, {
+    const response = await fetch(`${getApiUrl()}?action=update_memory`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload)
