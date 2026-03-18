@@ -7,7 +7,7 @@
       "t2i": { "endpoint": "https://host/v1/images/generations", "model": "gpt-image-1" },
       "i2i": { "endpoint": "https://host/v1/images/edits", "model": "gpt-image-1" }
     },
-    "course":"https://club.yujianpay.com/index.php/archives/2147/"
+     "course":"https://club.yujianpay.com/index.php/archives/2147/"
   },
   {
     "id": "openai",

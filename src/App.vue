@@ -6,11 +6,79 @@
 
 <script>
 import ChatLayout from './components/ChatLayout.vue';
+import { SERVERS, getServerKey } from '@/api/config';
 
 export default {
   name: 'App',
   components: {
     ChatLayout
+  },
+  async mounted() {
+    console.log('App mounted, checking server speed preference...');
+    this.checkServerSpeed();
+    
+    // Listen for manual trigger from config.js
+    window.addEventListener('aihelp-check-server-speed', this.checkServerSpeed);
+  },
+  destroyed() {
+    window.removeEventListener('aihelp-check-server-speed', this.checkServerSpeed);
+  },
+  methods: {
+    async checkServerSpeed() {
+      // 1. Determine Target URL (Active Model Endpoint)
+      let targetUrl = 'https://www.google.com'; // Default fallback
+      try {
+        const settings = this.$store.state.settings;
+
+        if (settings && settings.models) {
+          const activeModelId = settings.activeTextModelId || settings.activeModelId;
+          const activeModel = settings.models.find(m => m.id === activeModelId);
+          if (activeModel && activeModel.endpoint) {
+            targetUrl = activeModel.endpoint;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not retrieve active model endpoint, using default.', e);
+      }
+      
+      console.log('Speed test target URL:', targetUrl);
+
+      // 2. Generate Key based on Target URL
+      const storageKey = getServerKey(targetUrl);
+      const stored = localStorage.getItem(storageKey);
+
+      // 3. Check if we need to run test
+      if (!stored) {
+        console.log(`No preference found for ${targetUrl} (key: ${storageKey}). Testing server speeds...`);
+        
+        const tests = SERVERS.map(async (server) => {
+          try {
+            // Test the server's connection speed to the target
+            const response = await fetch(`https://${server}/AiAssistantv2.php?action=speed_test&url=${encodeURIComponent(targetUrl)}`);
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+               // Prefer server's reported connection time (total_time is in seconds)
+               return { server, time: data.total_time };
+            }
+            return { server, time: 9999 };
+          } catch (e) {
+            console.error(`Speed test failed for ${server}`, e);
+            return { server, time: 9999 };
+          }
+        });
+
+        const results = await Promise.all(tests);
+        // Sort by time ascending
+        results.sort((a, b) => a.time - b.time);
+        
+        const winner = results[0].server;
+        console.log('Selected fastest server:', winner, results);
+        localStorage.setItem(storageKey, winner);
+      } else {
+          console.log(`Using cached server for ${targetUrl}:`, stored);
+      }
+    }
   }
 }
 </script>
@@ -36,6 +104,15 @@ export default {
 .markdown-body table{
       width: 100%;
     overflow-x: auto;
+}
+
+.markdown-body {
+  font-size:unset !important
+}
+
+
+.katex-display{
+  overflow-x: auto;
 }
 
 body {
