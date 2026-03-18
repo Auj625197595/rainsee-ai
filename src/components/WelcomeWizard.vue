@@ -1,147 +1,152 @@
 <template>
   <div class="wizard-overlay">
-    <div class="wizard-bg-glow"></div>
     <div class="wizard-container">
-
+      
       <!-- Step 1: Introduction -->
       <div v-if="step === 1" class="wizard-step step-intro">
-
-        <div class="intro-header">
-
-          <h2 class="hero-title">雨见 <span class="gradient-text">AI 客户端</span></h2>
-          <p class="hero-subtitle">纯净 · 安全 · 私有化</p>
-        </div>
-
-        <div class="info-card">
-          <p class="info-text">
-            这是一个不直接提供 AI 服务的纯净客户端，您需要自行配置服务接口。
-          </p>
-          <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-repo-link">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-            </svg>
-            <span>已开源: Auj625197595/rainsee-ai</span>
-          </a>
-        </div>
-
-        <div class="feature-grid">
-          <div class="feature-card">
-            <div class="card-icon-wrapper memory-bg">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
-                <path d="M8.5 8.5v.01"></path>
-                <path d="M16 12v.01"></path>
-                <path d="M12 16v.01"></path>
+      
+        <div class="step-content-scroll">
+          <div class="intro-header">
+          
+            <h2 class="hero-title">雨见 <span class="gradient-text">AI 客户端</span></h2>
+            <p class="hero-subtitle">纯净 · 安全 · 私有化</p>
+          </div>
+          
+          <div class="info-card">
+            <p class="info-text">
+              这是一个不直接提供 AI 服务的纯净客户端，您需要自行配置服务接口。
+            </p>
+            <a href="https://github.com/Auj625197595/rainsee-ai" target="_blank" class="github-repo-link">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
               </svg>
+              <span>已开源: Auj625197595/rainsee-ai</span>
+            </a>
+          </div>
+          
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="card-icon-wrapper memory-bg">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
+                  <path d="M8.5 8.5v.01"></path>
+                  <path d="M16 12v.01"></path>
+                  <path d="M12 16v.01"></path>
+                </svg>
+              </div>
+              <div class="card-content">
+                <h4>专属记忆</h4>
+                <p>本地数据库，打造懂你的 AI</p>
+              </div>
             </div>
-            <div class="card-content">
-              <h4>专属记忆</h4>
-              <p>本地数据库，打造懂你的 AI</p>
+            
+            <div class="feature-card">
+              <div class="card-icon-wrapper privacy-bg">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <div class="card-content">
+                <h4>数据隐私</h4>
+                <p>数据仅存储在本地，完全由您掌控</p>
+              </div>
             </div>
           </div>
 
-          <div class="feature-card">
-            <div class="card-icon-wrapper privacy-bg">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          <div class="capability-badges">
+            <div class="badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                <path d="M2 2l7.586 7.586"></path>
+                <circle cx="11" cy="11" r="2"></circle>
               </svg>
+              <span>绘画支持</span>
             </div>
-            <div class="card-content">
-              <h4>数据隐私</h4>
-              <p>数据仅存储在本地，完全由您掌控</p>
+            <div class="badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>计划模式</span>
+            </div>
+            <div class="badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>无限制对话</span>
             </div>
           </div>
         </div>
 
-        <div class="capability-badges">
-          <div class="badge">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-              <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-              <path d="M2 2l7.586 7.586"></path>
-              <circle cx="11" cy="11" r="2"></circle>
+        <div class="step-footer-fixed">
+          <button class="start-btn" @click="nextStep">
+            <span>开始配置</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-            <span>绘画支持</span>
-          </div>
-          <div class="badge">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>计划模式</span>
-          </div>
-          <div class="badge">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>无限制对话</span>
-          </div>
+          </button>
         </div>
-
-        <button class="start-btn" @click="nextStep">
-          <span>开始配置</span>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </button>
       </div>
 
       <!-- Step 2: Configure Interface -->
       <div v-else-if="step === 2" class="wizard-step step-config">
-        <div class="step-header">
-          <h3>配置文字合成接口</h3>
-          <p>为了开始使用，请配置一个基础的文字对话模型接口。</p>
-        </div>
+        <div class="step-content-scroll">
+          <div class="step-header">
+            <h3>配置文字合成接口</h3>
+            <p>为了开始使用，请配置一个基础的文字对话模型接口。</p>
+          </div>
 
-        <div class="config-form">
-          <div class="form-group">
-            <div class="provider-label-row">
-              <label>供应商 (Provider)</label>
-              <a v-if="currentProvider && currentProvider.course"
-                 :href="currentProvider.course"
-                 target="_blank"
-                 class="tutorial-link"
-                 title="查看配置教程">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-                <span>查看教程</span>
-              </a>
+          <div class="config-form">
+            <div class="form-group">
+              <div class="provider-label-row">
+                <label>供应商 (Provider)</label>
+                <a v-if="currentProvider && currentProvider.course" 
+                   :href="currentProvider.course" 
+                   target="_blank" 
+                   class="tutorial-link"
+                   title="查看配置教程">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>查看教程</span>
+                </a>
+              </div>
+              <select v-model="modelForm.provider" @change="handleProviderChange">
+                <option v-for="p in providers" :key="p.id" :value="p.id">{{ p.name }}</option>
+              </select>
             </div>
-            <select v-model="modelForm.provider" @change="handleProviderChange">
-              <option v-for="p in providers" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
-          </div>
 
-          <div class="form-group">
-            <label>配置名称</label>
-            <input type="text" v-model="modelForm.name" placeholder="例如：我的 GPT-4">
-          </div>
+            <div class="form-group">
+              <label>配置名称</label>
+              <input type="text" v-model="modelForm.name" placeholder="例如：我的 GPT-4">
+            </div>
 
-          <div class="form-group">
-            <label>API 终端 (Endpoint)</label>
-            <input type="text" v-model="modelForm.endpoint" placeholder="https://api.openai.com/v1/chat/completions">
-            <small class="hint">兼容 OpenAI API 格式</small>
-          </div>
+            <div class="form-group">
+              <label>API 终端 (Endpoint)</label>
+              <input type="text" v-model="modelForm.endpoint" placeholder="https://api.openai.com/v1/chat/completions">
+              <small class="hint">兼容 OpenAI API 格式</small>
+            </div>
 
-          <div class="form-group">
-            <label>API Key</label>
-            <input type="password" v-model="modelForm.apiKey" placeholder="sk-...">
-          </div>
+            <div class="form-group">
+              <label>API Key</label>
+              <input type="password" v-model="modelForm.apiKey" placeholder="sk-...">
+            </div>
 
-          <div class="form-group">
-            <label>模型名称 (Model Name)</label>
-            <input type="text" v-model="modelForm.model" placeholder="gpt-4">
+            <div class="form-group">
+              <label>模型名称 (Model Name)</label>
+              <input type="text" v-model="modelForm.model" placeholder="gpt-4">
+            </div>
           </div>
         </div>
 
-        <div class="step-actions">
+        <div class="step-actions step-footer-fixed">
           <button class="btn-secondary" @click="step = 1">上一步</button>
           <button class="cool-btn" @click="saveAndStart" :disabled="!isValid">
             <span>开始使用</span>
@@ -178,10 +183,10 @@ export default {
   },
   computed: {
     isValid() {
-      return this.modelForm.name &&
-          this.modelForm.endpoint &&
-          this.modelForm.apiKey &&
-          this.modelForm.model;
+      return this.modelForm.name && 
+             this.modelForm.endpoint && 
+             this.modelForm.apiKey && 
+             this.modelForm.model;
     },
     currentProvider() {
       return this.providers.find(p => p.id === this.modelForm.provider);
@@ -208,7 +213,7 @@ export default {
 
       // Add the model to the store
       mutations.addModel(newModel);
-
+      
       // Set as active text model
       mutations.setActiveModel(newModel.id, 'text');
 
@@ -222,18 +227,14 @@ export default {
 <style scoped>
 .wizard-overlay {
   position: fixed;
-
   top: 0;
   left: 0;
-  bottom:0;
-  right:0;
+  bottom: 0;
+  right: 0;
   background-color: var(--bg-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   z-index: 2000;
-  overflow-y: auto;
-  backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 .wizard-bg-glow {
@@ -250,25 +251,47 @@ export default {
 
 .wizard-container {
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  padding: 20px;
-  width: 90%;
-  max-width: 600px;
-  box-shadow: var(--shadow-card);
+  width: 100%;
+  height: 100%;
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  min-height: 500px;
 }
 
 .wizard-step {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  flex: 1;
+  height: 100%;
   animation: fadeIn 0.4s ease;
+  position: relative;
+}
+
+.step-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  padding-bottom: 100px; /* Ensure content is not hidden behind fixed footer */
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.step-footer-fixed {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+}
+
+.step-actions.step-footer-fixed {
+  justify-content: space-between;
 }
 
 @keyframes fadeIn {
@@ -603,10 +626,7 @@ export default {
 
 .config-form {
   width: 100%;
-  flex: 1;
-  overflow-y: auto;
   padding-right: 4px;
-  margin-bottom: 24px;
 }
 
 .form-group {
