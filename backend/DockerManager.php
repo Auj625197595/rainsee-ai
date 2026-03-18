@@ -10,7 +10,7 @@ class DockerManager
     {
         $this->runtimePath = $runtimePath;
         $this->lockDir = $runtimePath . DIRECTORY_SEPARATOR . 'locks';
-
+        
         // Suppress warnings and try to create
         if (!is_dir($this->runtimePath)) {
             @mkdir($this->runtimePath, 0777, true);
@@ -18,7 +18,7 @@ class DockerManager
         if (!is_dir($this->lockDir)) {
             @mkdir($this->lockDir, 0777, true);
         }
-
+        
         $this->mapFile = $this->runtimePath . DIRECTORY_SEPARATOR . 'docker_map.json';
     }
 
@@ -68,7 +68,7 @@ class DockerManager
         // Using node:latest as base image since claude-code is a node package
         // Keep container running with tail -f /dev/null
         // Mount a volume for workspace if needed (e.g., /app)
-
+        
         // Add environment variables for Claude Code
         // Added SHELL and TERM for better environment detection
         $claudeBaseUrl = defined('CLAUDE_API_BASE_URL') ? CLAUDE_API_BASE_URL : 'https://open.bigmodel.cn/api/anthropic';
@@ -82,7 +82,7 @@ class DockerManager
         // Added --name for deterministic addressing
         $cmd = "docker run -d --name $containerId -w /app $envVars $image tail -f /dev/null 2>&1";
         $output = shell_exec($cmd);
-
+        
         // Verify start
         $realId = trim($output);
 
@@ -107,16 +107,16 @@ class DockerManager
         // Install claude-code inside container (if not present in image)
         // This effectively makes 'claude' command available
         $npmInstall = shell_exec("docker exec $containerId sh -c 'command -v claude >/dev/null 2>&1 || npm install -g @anthropic-ai/claude-code' 2>&1");
-
+        
         // Locate claude binary
         // On alpine it might be in /usr/bin or /usr/local/bin or just npm bin location
         $claudePath = trim(shell_exec("docker exec $containerId which claude"));
-
+        
         if (!$claudePath) {
              // Try to find it manually
              $claudePath = trim(shell_exec("docker exec $containerId find / -name claude -type f -o -type l 2>/dev/null | head -n 1"));
         }
-
+        
         if (!$claudePath) {
              // Attempt to locate via npm bin -g
              $npmBin = trim(shell_exec("docker exec $containerId npm bin -g"));
@@ -136,7 +136,7 @@ class DockerManager
                         "chown -R claude:claude /app && " .
                         "chown -R claude:claude /usr/local/lib/node_modules && " . // Ensure global modules are writable/readable
                         "chown -R claude:claude /usr/local/bin"; // Allow writing wrappers
-
+        
         shell_exec("docker exec $containerId sh -c " . escapeshellarg($userSetupCmd));
 
         // Create a wrapper script to enforce --dangerously-skip-permissions
@@ -144,12 +144,12 @@ class DockerManager
         // Note: Using dirname to ensure we write to the same directory
         $dir = dirname($claudePath);
         $original = $claudePath . '-original';
-
+        
         $wrapperCmd = "if [ -f $claudePath ] && [ ! -f $original ]; then " .
                       "mv $claudePath $original && " .
                       "printf '#!/bin/sh\\nexec $original --dangerously-skip-permissions \"$@\"\\n' > $claudePath && " .
                       "chmod +x $claudePath; fi";
-
+        
         shell_exec("docker exec $containerId sh -c " . escapeshellarg($wrapperCmd));
 
         $this->_installAnycrawl($containerId);
@@ -186,23 +186,23 @@ class DockerManager
         }
 
         try {
-
+            
             // Create a marker file to track changes
             $markerFile = '/tmp/cmd_marker_' . uniqid();
             if ($callback) $callback("📍 [DockerManager] Creating marker file: $markerFile\n");
             shell_exec("docker exec $containerId touch $markerFile");
-
+            
             // Prepare command
             // 2>&1 to capture stderr
             // Execute as 'claude' user to satisfy security checks
             // We use 'su claude -c' because standard 'docker exec -u' might need user ID, but this is simpler
             // Important: Set working directory to /app explicitly and use -p flag for claude if it's a claude command
-
+            
             $finalCommand = $command;
             if (strpos($command, 'claude') === 0) {
                  // Inject the progress reporting instruction
                  $progressInstruction = " (Please report what you just did to the console every 5 seconds so I can see your progress)";
-
+                 
                  // Try to inject inside existing quotes if present
                  if (preg_match('/^(claude(?:\s+ask)?\s+["\'])(.*)(["\'])(.*)$/i', $command, $matches)) {
                      $finalCommand = $matches[1] . $matches[2] . $progressInstruction . $matches[3] . $matches[4];
@@ -210,11 +210,11 @@ class DockerManager
                      // Otherwise append it to the command, Claude will treat it as part of the prompt
                      // We check if it's just 'claude' or 'claude ask' and wrap it properly if needed
                      if (preg_match('/^claude(\s+ask)?$/i', trim($command))) {
-                         // No prompt provided, maybe just starting interactive?
+                         // No prompt provided, maybe just starting interactive? 
                          // But we are in stream mode, so we usually have a prompt.
-                         $finalCommand = $command;
+                         $finalCommand = $command; 
                      } else {
-                         // Append it. If there are flags like -p, this might put it after flags,
+                         // Append it. If there are flags like -p, this might put it after flags, 
                          // but Claude CLI usually handles that fine or we can try to be smarter.
                          // For simplicity, let's just append it.
                          $finalCommand = $command;
@@ -231,7 +231,7 @@ class DockerManager
 
             // Use explicit /bin/bash to avoid PATH issues
             $dockerCmd = "docker exec -i -u claude -w /app $containerId /bin/bash -c " . escapeshellarg($finalCommand . " 2>&1");
-
+            
             $descriptors = [
                 0 => ["pipe", "r"],
                 1 => ["pipe", "w"],
@@ -244,24 +244,24 @@ class DockerManager
             if (is_resource($process)) {
                 if ($callback) $callback("🟢 [DockerManager] Process started.\n");
                 fclose($pipes[0]); // Close stdin
-
+                
                 // Set non-blocking for heartbeat
                 stream_set_blocking($pipes[1], 0);
-
+                
                 $buffer = '';
                 $lastOutputTime = time();
                 $isClaude = (strpos($command, 'claude') === 0);
 
                 while (true) {
                     $chunk = fread($pipes[1], 4096);
-
+                    
                     if ($chunk !== false && $chunk !== '') {
                         $buffer .= $chunk;
                         // Process lines from buffer
                         while (($pos = strpos($buffer, "\n")) !== false) {
                             $line = substr($buffer, 0, $pos + 1);
                             $buffer = substr($buffer, $pos + 1);
-
+                            
                             // Strip ANSI codes
                             $cleanLine = preg_replace('/\x1b\[[0-9;]*m/', '', $line);
                             // Callback for SSE
@@ -273,7 +273,7 @@ class DockerManager
                         if (feof($pipes[1])) {
                             break;
                         }
-
+                        
                         $status = proc_get_status($process);
                         if (!$status['running']) {
                             // Process finished, ensure we read everything
@@ -288,7 +288,7 @@ class DockerManager
                              $callback(".");
                              $lastOutputTime = time();
                         }
-
+                        
                         usleep(100000); // 100ms
                     }
                 }
@@ -303,20 +303,20 @@ class DockerManager
                 fclose($pipes[2]);
                 $exitCode = proc_close($process);
                 if ($callback) $callback("\n🏁 [DockerManager] Process execution finished with exit code: $exitCode\n");
-
+                
                 // Check for new files generated during execution
                 // Exclude common directories like node_modules, .git, vendor to avoid massive syncs
                 // Use sh -c to handle redirection properly inside the container
                 if ($callback) $callback("📂 [DockerManager] Checking for generated files...\n");
                 $findCmd = "docker exec $containerId sh -c \"find /app -type f -newer $markerFile -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/vendor/*' 2>/dev/null\"";
                 $newFilesOutput = shell_exec($findCmd);
-
+                
                 if ($newFilesOutput) {
                     $files = array_filter(explode("\n", str_replace("\r\n", "\n", $newFilesOutput)));
                     foreach ($files as $file) {
                         $file = trim($file);
                         if (empty($file)) continue;
-
+                        
                         try {
                             if ($callback) $callback("\n📦 [DockerManager] Syncing generated file: $file...\n");
                             $url = $this->copyFileFromContainer($chatId, $file);
@@ -333,7 +333,7 @@ class DockerManager
                 } else {
                     if ($callback) $callback("ℹ️ [DockerManager] No new files generated.\n");
                 }
-
+                
                 // Cleanup marker
                 if ($callback) $callback("🧹 [DockerManager] Cleaning up marker file...\n");
                 shell_exec("docker exec $containerId rm -f $markerFile");
@@ -368,60 +368,60 @@ class DockerManager
     {
         // Ensure container is running before copy
         $containerId = $this->startContainer($chatId);
-
+        
         // Create a temporary file path
         $tempFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . basename($containerPath) . '_' . uniqid();
-
+        
         // Copy file from container to temp file
         $cmd = "docker cp $containerId:" . escapeshellarg($containerPath) . " " . escapeshellarg($tempFile);
         shell_exec($cmd);
-
+        
         if (!file_exists($tempFile)) {
             throw new Exception("Failed to copy file from container: $containerPath");
         }
-
+        
         // Upload the file via uloaddocker.php
         $url = 'http://127.0.0.1:4556/uloaddocker.php';
         $ch = curl_init();
-
+        
         // Use CURLFile for file upload
         $cfile = new CURLFile($tempFile, 'application/octet-stream', basename($containerPath));
         $data = [
             'file' => $cfile
         ];
-
+        
         if ($hostPath) {
             $data['path'] = $hostPath;
         }
-
+        
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
+        
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
+        
         if (curl_errno($ch)) {
             $error = curl_error($ch);
             curl_close($ch);
             @unlink($tempFile);
             throw new Exception("Failed to upload file: $error");
         }
-
+        
         curl_close($ch);
         @unlink($tempFile); // Clean up temp file
-
+        
         if ($httpCode !== 200) {
             throw new Exception("Upload failed with HTTP code $httpCode: $response");
         }
-
+        
         $result = json_decode($response, true);
         if (!$result || !isset($result['success']) || !$result['success']) {
             $msg = isset($result['error']) ? $result['error'] : 'Unknown error';
             throw new Exception("Upload failed: $msg");
         }
-
+        
         // Return the public URL
         // Assuming the upload goes to the default uploads directory which is mapped to https://icon144.yjllq.com/uploads/
         return "https://icon144.yjllq.com/uploads/" . basename($containerPath);
@@ -470,14 +470,15 @@ class DockerManager
          if (empty($checkNpm)) {
              shell_exec("docker exec $containerId npm install -g anycrawl-mcp");
          }
-
+ 
          // Configure anycrawl-mcp for the claude user
          $markerSetup = "/home/claude/.anycrawl_setup_done";
          $checkMarker = trim(shell_exec("docker exec $containerId sh -c '[ -f $markerSetup ] && echo 1 || echo 0'"));
-
+         
          if ($checkMarker !== '1') {
              // Run as claude user to update claude config
-             $anycrawlCmd = "claude mcp add anycrawl -e ANYCRAWL_API_KEY=ac-3434967e333ef320705ea1d077b64 -- npx -y anycrawl-mcp";
+            $anycrawlApiKey = ANYCRAWL_API_KEY;
+            $anycrawlCmd = "claude mcp add anycrawl -e ANYCRAWL_API_KEY=$anycrawlApiKey -- npx -y anycrawl-mcp";
              shell_exec("docker exec -u claude $containerId sh -c " . escapeshellarg($anycrawlCmd));
              shell_exec("docker exec -u claude $containerId touch $markerSetup");
          }

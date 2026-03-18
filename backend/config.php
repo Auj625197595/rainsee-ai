@@ -12,12 +12,45 @@ define('WEBSCRAPE_API_URL', 'http://' . WEBSCRAPE_API_DOMAIN . '/v1/scrape');
 define('LANG_SEARCH_API_KEY', '');
 //去https://langsearch.com/login申请搜索api
 
-function isClaudeToolAllowed($apiKey) {
-    return true;
-}
-
-
 // Claude Code Docker 运行环境变量配置
 define('CLAUDE_API_BASE_URL', '');
 define('CLAUDE_API_KEY', '');
 
+// Anycrawl API KEY
+define('ANYCRAWL_API_KEY', '');
+
+
+
+// Chat Generation Default Configuration (Migrated from AiAssistantv2.php)
+
+
+function isClaudeToolAllowed($apiKey,$locationHost) {
+   return false;
+}
+
+function applyDefaultImgConfig(&$endpoint, &$apiKey, &$model)
+{
+ 
+}
+
+function applyDefaultConfig(&$endpoint, &$apiKey, &$model, $thinkingMode = false, $locationHost = '')
+{
+  
+}
+
+/**
+ * Apply fast and refined config for specific tasks (Memory, Query Optimization)
+ */
+function applyFastConfig(&$endpoint, &$apiKey, &$model, $locationHost = '')
+{
+
+}
+
+/**
+ * Perform Rcouyi Image Generation (Migrated from AiAssistantv2.php)
+ * Returns true if the request was handled by this function, false otherwise.
+ */
+function performRcouyiImageGeneration($locationHost, $prompt, $imageUrls, $t2iModel = null, $i2iModel = null, $sendEventCallback, $flushCallback)
+{
+    return false;
+}
