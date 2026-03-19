@@ -368,7 +368,7 @@ export async function updateMemory(data) {
   };
 
   try {
-    const response = await fetch(`${getApiUrl()}?action=update_memory`, {
+    const response = await fetch(`${API_URL}?action=update_memory`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload)
